@@ -1,5 +1,5 @@
-// Relevant PROS library are used for tasks and checking motor temperature (embeded in main.h). Other relevant header files are included to declare a task
-// for our intake and declare relevenat motors to modify their attributes.
+// Relevant PROS library are used for tasks and checking motor temperature (embeded in main.h). Other relevant header files are included to declare the fuynction for out intake task and
+// declare relevant motors to modify their attributes.
 #include "main.h"
 
 #include "auton_selector.h"
