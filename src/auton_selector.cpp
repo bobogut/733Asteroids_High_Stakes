@@ -102,24 +102,24 @@ void updateStates() {
 
 
     // Adds the checked state to the button matching the autonomous selected
-    if (autonSelected == skills)
+    if (autonSelected == SKILLS)
         lv_obj_add_state(skillsBtn, LV_STATE_CHECKED);
-    else if (autonSelected == redPositiveCorner)
+    else if (autonSelected == REDPOSITIVECORNER)
         lv_obj_add_state(redPositiveCornerBtn, LV_STATE_CHECKED);
-    else if (autonSelected == redNegativeCorner)
+    else if (autonSelected == REDNEGATIVECORNER)
         lv_obj_add_state(redNegativeCornerBtn, LV_STATE_CHECKED);
-    else if (autonSelected == redSoloAWP)
+    else if (autonSelected == REDSOLOAWP)
         lv_obj_add_state(redSoloAWPBtn, LV_STATE_CHECKED);
-    else if (autonSelected == bluePositiveCorner)
+    else if (autonSelected == BLUEPOSITIVECORNER)
         lv_obj_add_state(bluePositiveCornerBtn, LV_STATE_CHECKED);
-    else if (autonSelected == blueNegativeCorner)
+    else if (autonSelected == BLUENEGATIVECORNER)
         lv_obj_add_state(blueNegativeCornerBtn, LV_STATE_CHECKED);
-    else if (autonSelected == blueSoloAWP)
+    else if (autonSelected == BLUESOLOAWP)
         lv_obj_add_state(blueSoloAWPBtn, LV_STATE_CHECKED);
 
-    if (autonSelected == redPositiveCorner || autonSelected == redNegativeCorner || autonSelected == redSoloAWP)
+    if (autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == REDSOLOAWP)
         lv_obj_add_state(redSide, LV_STATE_CHECKED);
-    else if (autonSelected == bluePositiveCorner || autonSelected == blueNegativeCorner || autonSelected == blueSoloAWP)
+    else if (autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER || autonSelected == BLUESOLOAWP)
         lv_obj_add_state(blueSide, LV_STATE_CHECKED);
 }
 
@@ -128,12 +128,11 @@ void buttonPress(lv_event_t *btnPressed) {
     lv_obj_t *btn = lv_event_get_target(btnPressed);
 
     // Home screen buttons
-    if (btn == skillsBtn)
-    {
-        if (autonSelected != skills) // Serves as a toggle, in this case for selecting skills
-            autonSelected = skills;
+    if (btn == skillsBtn) {
+        if (autonSelected != SKILLS) // Serves as a toggle, in this case for selecting skills
+            autonSelected = SKILLS;
         else
-            autonSelected = none;
+            autonSelected = NONE;
     }
     else if (btn == redSide)
         lv_scr_load(redScreen); // Loads the associated screen, in this case for red autonomous
@@ -143,51 +142,45 @@ void buttonPress(lv_event_t *btnPressed) {
 
 
     // Red side buttons
-    if (btn == redPositiveCornerBtn)
-    {
-        if (autonSelected != redPositiveCorner)
-            autonSelected = redPositiveCorner;
+    if (btn == redPositiveCornerBtn) {
+        if (autonSelected != REDPOSITIVECORNER)
+            autonSelected = REDPOSITIVECORNER;
         else
-            autonSelected = none;
+            autonSelected = NONE;
     }
-    else if (btn == redNegativeCornerBtn)
-    {
-        if (autonSelected != redNegativeCorner)
-            autonSelected = redNegativeCorner;
+    else if (btn == redNegativeCornerBtn) {
+        if (autonSelected != REDNEGATIVECORNER)
+            autonSelected = REDNEGATIVECORNER;
         else
-            autonSelected = none;
+            autonSelected = NONE;
     }
-    else if (btn == redSoloAWPBtn)
-    {
-        if (autonSelected != redSoloAWP)
-            autonSelected = redSoloAWP;
+    else if (btn == redSoloAWPBtn) {
+        if (autonSelected != REDSOLOAWP)
+            autonSelected = REDSOLOAWP;
         else
-            autonSelected = none;
+            autonSelected = NONE;
     }
 
 
 
     // Blue side buttons
-    if (btn == bluePositiveCornerBtn)
-    {
-        if (autonSelected != bluePositiveCorner)
-            autonSelected = bluePositiveCorner;
+    if (btn == bluePositiveCornerBtn) {
+        if (autonSelected != BLUEPOSITIVECORNER)
+            autonSelected = BLUEPOSITIVECORNER;
         else
-            autonSelected = none;
+            autonSelected = NONE;
     }
-    else if (btn == blueNegativeCornerBtn)
-    {
-        if (autonSelected != blueNegativeCorner)
-            autonSelected = blueNegativeCorner;
+    else if (btn == blueNegativeCornerBtn) {
+        if (autonSelected != BLUENEGATIVECORNER)
+            autonSelected = BLUENEGATIVECORNER;
         else
-            autonSelected = none;
+            autonSelected = NONE;
     }
-    else if (btn == blueSoloAWPBtn)
-    {
-        if (autonSelected != blueSoloAWP)
-            autonSelected = blueSoloAWP;
+    else if (btn == blueSoloAWPBtn) {
+        if (autonSelected != BLUESOLOAWP)
+            autonSelected = BLUESOLOAWP;
         else
-            autonSelected = none;
+            autonSelected = NONE;
     }
 
 
