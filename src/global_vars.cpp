@@ -1,11 +1,11 @@
+// Relevant PROS library are used for declaring the controller. States header file simply defines enumators
 #include "pros/misc.hpp"
 
 #include "states.h"
 
 
 
-enum autons autonSelected;
-bool autonRan;
+enum Autons autonSelected;
 
 
 
@@ -14,7 +14,7 @@ bool storeRing = false;
 
 
 
-enum intakeStates intakeState;
+enum IntakeStates intakeState;
 int intakeSpeed;
 bool overrideIntakeState;
 

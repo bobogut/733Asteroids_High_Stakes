@@ -2,25 +2,22 @@
 
 
 
-enum autons 
-{
-  redPositiveCorner,
-  redNegativeCorner,
-  redSoloAWP,
-  bluePositiveCorner,
-  blueNegativeCorner,
-  blueSoloAWP,
-  skills,
-  none
+enum Autons {
+  REDPOSITIVECORNER,
+  REDNEGATIVECORNER,
+  REDSOLOAWP,
+  BLUEPOSITIVECORNER,
+  BLUENEGATIVECORNER,
+  BLUESOLOAWP,
+  SKILLS,
+  NONE
 };
 
 
 
-enum intakeStates 
-{
-  intakeMogo,
-  intakeArm,
-  intakeReverse,
-  intakeResting,
-  intakeTesting
+enum IntakeStates {
+  INTAKEMOGO,
+  INTAKEREVERSE,
+  INTAKERESTING,
+  INTAKETESTING
 };

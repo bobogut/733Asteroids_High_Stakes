@@ -9,11 +9,11 @@
 
 
 void initialize() {
-	autonSelected = none;
+	autonSelected = NONE;
 
 
 	// Default intake states
-	intakeState = intakeResting;
+	intakeState = INTAKERESTING;
 	overrideIntakeState = false;
 	
 

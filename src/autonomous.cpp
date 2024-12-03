@@ -6,11 +6,12 @@
 #include "pros/rtos.hpp"
 #include "states.h"
 #include <cmath>
+#include <cstdint>
 
 
 
-void closeClamp(bool close)
-{
+void closeClamp(bool close) {
+    // I just created this so that I do not get confused
     if (close)
         mogoClamp.extend();
     else
@@ -22,15 +23,70 @@ void autonomous() {
 
     std::cout << "In autonomous" << std::endl;
 
-    if (autonSelected == redPositiveCorner ) {
+    if (autonSelected == REDPOSITIVECORNER ) {
 
+
+        base.setPose(-52.1, -23.4, 270); // Roughly 11 inches in height from wheel center
+
+        storeRing = true;
+
+        base.moveToPoint(-31, -23.4, 1000, {.forwards = false, .maxSpeed = 82.55});
+
+        base.waitUntilDone();
+
+        closeClamp(true);
+
+        pros::delay(500);
+
+        base.turnToPoint(-24, -48, 1000);
+
+        base.waitUntilDone();
+
+        overrideIntakeState = true;
+
+        intakePre.move_velocity(600);
+
+        base.moveToPoint(-24, -46, 1000, {.minSpeed = 63.5, .earlyExitRange = 3});
+
+        base.turnToPoint(-56.4, -59.1, 2000, {.minSpeed = 88, .earlyExitRange = 10});
+
+        base.waitUntilDone();
+
+        overrideIntakeState = false;
+
+        intakeState = INTAKEMOGO;
+
+        base.moveToPose(-56.4, -59.1, 225, 3500);
+
+        base.waitUntilDone();
+
+        std::cout << "Point before goal is " << base.getPose().x << ", " << base.getPose().y << std::endl; 
+
+
+        doinker.extend();
+
+        base.turnToHeading(45, 1000, {.direction = lemlib::AngularDirection::CCW_COUNTERCLOCKWISE});
+
+        base.waitUntilDone();
+
+        doinker.retract();
+
+        closeClamp(false);
+
+
+        /*
         base.setPose(-52.1, -60.5, 270);
+
 
         // Grab the goal
 
-        base.moveToPose(-22.6, -60.5, 270, 1500, {.forwards = false, .minSpeed = 82.55, .earlyExitRange = 3});
+        base.moveToPose(-22.6, -60.5, 270, 1500, {.forwards = false, .minSpeed = 76.2, .earlyExitRange = 3});
 
-        base.moveToPose(-8.9, -52.7, 237, 1000, {.forwards = false});
+        base.moveToPose(-8.9, -52.7, 237, 1500, {.forwards = false});
+
+        base.waitUntilDone();
+
+        std::cout << "Point before goal is " << base.getPose().x << ", " << base.getPose().y << std::endl; 
 
         base.waitUntilDone();
 
@@ -56,9 +112,11 @@ void autonomous() {
 
         doinker.retract();
 
+        */
+
 
     }
-    else if (autonSelected == redNegativeCorner) {
+    else if (autonSelected == REDNEGATIVECORNER) {
         // Negative corner auton
         
         // throw into initialize
@@ -78,7 +136,7 @@ void autonomous() {
 
         base.waitUntilDone();
 
-        intakeState = intakeMogo;
+        intakeState = INTAKEMOGO;
 
         base.moveToPoint(-23.5, 47.0, 1000);
 
@@ -111,10 +169,13 @@ void autonomous() {
 
         base.waitUntil(16);
         
-        intakeState = intakeResting;
+        intakeState = INTAKERESTING;
     }
-    else if (autonSelected == redSoloAWP) {
+    else if (autonSelected == REDSOLOAWP) {
+        int32_t startTime = pros::millis();
+
         // See SG-1
+
         base.setPose(-52.1, -23.4, 270); // Roughly 11 inches in height from wheel center
 
         base.moveToPoint(-31, -23.4, 1000, {.forwards = false, .maxSpeed = 82.55});
@@ -125,31 +186,33 @@ void autonomous() {
 
         pros::delay(500);
 
-        intakeState = intakeMogo; // Start intaking rings to the mogo
+        base.turnToPoint(-44.9, 9.8, 4000);
+
+        base.waitUntilDone();
+
+        intakeState = INTAKEMOGO; // Start intaking rings to the mogo
 
         pros::delay(500);
 
         // Grab the second goal
 
-        base.turnToPoint(-46.6, 9.8, 4000);
-
-        base.waitUntilDone();
-
-        intakeState = intakeResting;
+        intakeState = INTAKERESTING;
 
         closeClamp(false);
 
-        pros::delay(250);
+        findNextDown = true;
 
-        base.moveToPoint(-46.6, 9.8, 1000);
+        pros::delay(500);
 
-        base.turnToHeading(240, 2000);
+        base.moveToPoint(-44.9, 9.8, 1000);
+
+        base.turnToHeading(235, 2000);
 
         base.waitUntilDone();
 
         std::cout << base.getPose().theta << std::endl;
 
-        base.moveToPose(-31, 19.5, 240, 2500, {.forwards = false});
+        base.moveToPose(-31, 19.5, 235, 2500, {.forwards = false});
 
         base.waitUntilDone();
 
@@ -159,9 +222,13 @@ void autonomous() {
 
         pros::delay(500);
 
-        intakeState = intakeMogo;
+        // Grab another ring
 
-        base.turnToPoint(-24, 48, 1500);
+        intakeState = INTAKEMOGO;
+
+        // base.turnToPoint(-24, 48, 1500);
+
+        base.turnToHeading(0, 1000);
 
         base.moveToPoint(-24, 50.0, 1500);
 
@@ -206,8 +273,9 @@ void autonomous() {
     
         base.moveToPoint(-15, 46.3, 1000);
         */
+        std::cout << "Done after " << pros::millis() - startTime << std::endl;
     }
-    else if (autonSelected == blueNegativeCorner) {
+    else if (autonSelected == BLUENEGATIVECORNER) {
         // throw into initialize
         base.setPose(62.7, 23.4, 90);
 
@@ -225,7 +293,7 @@ void autonomous() {
 
         base.waitUntilDone();
 
-        intakeState = intakeMogo;
+        intakeState = INTAKEMOGO;
 
         base.moveToPoint(23.5, 47.0, 1000);
 
@@ -254,13 +322,13 @@ void autonomous() {
 
         base.waitUntil(16);
         
-        intakeState = intakeResting;
+        intakeState = INTAKERESTING;
 
         mogoClamp.retract();
     }
-    else if (autonSelected == bluePositiveCorner) {
+    else if (autonSelected == BLUEPOSITIVECORNER) {
     }
-    else if (autonSelected == skills) {
+    else if (autonSelected == SKILLS) {
 
         base.setPose(-57.8, -17, 302);
 
@@ -280,7 +348,7 @@ void autonomous() {
     
         base.waitUntilDone();
 
-        intakeState = intakeMogo;
+        intakeState = INTAKEMOGO;
 
         base.moveToPose(-24, -24, 135, 1500, {.minSpeed = 76.2, .earlyExitRange = 3});
 
@@ -308,7 +376,7 @@ void autonomous() {
 
         pros::delay(500);
 
-        intakeState = intakeResting;
+        intakeState = INTAKERESTING;
 
         findNextDown = true;
 
@@ -358,7 +426,7 @@ void autonomous() {
 
         // Grab a ring
 
-        intakeState = intakeMogo;
+        intakeState = INTAKEMOGO;
 
         base.swingToPoint(-24, 48, lemlib::DriveSide::LEFT, 1000, {.direction = lemlib::AngularDirection::CCW_COUNTERCLOCKWISE, .minSpeed = 76.2, .earlyExitRange = 10});
    
@@ -382,7 +450,7 @@ void autonomous() {
         
         base.waitUntilDone();
 
-        intakeState = intakeResting;
+        intakeState = INTAKERESTING;
 
         findNextDown = true;
 
@@ -441,7 +509,7 @@ void autonomous() {
 
         base.waitUntilDone();
 
-        intakeState = intakeMogo;
+        intakeState = INTAKEMOGO;
 
         base.moveToPoint(24, -24, 1500, {.minSpeed = 76.2, .earlyExitRange = 3});
 
@@ -467,7 +535,7 @@ void autonomous() {
 
         pros::delay(500);
 
-        intakeState = intakeResting;
+        intakeState = INTAKERESTING;
 
         findNextDown = true;
 
@@ -475,7 +543,7 @@ void autonomous() {
 
         closeClamp(false);
     }
-    else if (autonSelected == none) {
+    else if (autonSelected == NONE) {
     }
 
     optical.set_led_pwm(0);

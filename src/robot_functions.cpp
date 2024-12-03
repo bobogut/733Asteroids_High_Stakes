@@ -48,16 +48,16 @@ std::array<double, 3> nextNeutralHook() {
 }
 
 // For clarity when I am writing the code
-enum desiredHookPositions {
-    Top,
-    Neutral
+enum DesiredHookPositions {
+    TOP,
+    NEUTRAL
 };
 
-double findClosestHook(desiredHookPositions desiredHookPosition) {
+double findClosestHook(DesiredHookPositions desiredHookPosition) {
     double desiredPosition;                   // Where we want the intake to move to
     std::array<double, 3> potentialPositions; // An array for storing all potentially viable hook positions
 
-    if (desiredHookPosition == Top) {
+    if (desiredHookPosition == TOP) {
         potentialPositions = nextTopHook();
 
         // Runs through every item of the potential positions array
@@ -69,23 +69,23 @@ double findClosestHook(desiredHookPositions desiredHookPosition) {
         }
         
     }
-    else if (desiredHookPosition == Neutral) {
+    else if (desiredHookPosition == NEUTRAL) {
         potentialPositions = nextNeutralHook();
         
-        for (int i = 2; i < potentialPositions.size(); i--) {
+        for (int i = 0; i < potentialPositions.size(); i++) {
             if (potentialPositions[i] - intakeHook.get_position() <= 0) // If the value is positive we know that the hook associated with the potential position needs to move forward to   
                 desiredPosition = potentialPositions[i];                // reach a "neutral position". As we want the intake to move backwards to avoid catching on mogos, we can 
                                                                         // immediately discard it. The equal check is to catch when the intake has not moved yet we accidently call it to 
-                                                                        // reach a neutral position to avoid breaking the programming. We run the loop backwards as it is the quickest way 
-                                                                        // to sort through all the potential positions without additional checks. As stated earlier the potential positions                                                                         // 
-                                                                        // array is arragned from smallest to largest, so we can apply the same logic here.
+                                                                        // reach a neutral position to avoid breaking the programming. As stated earlier the potential positions array is                                                                         // 
+                                                                        // arragned from smallest to largest, however the logic this time is that the last valid position should match to
+                                                                        // the correct hook as it would be the closest to the current position without having the intake move forwards.
         }
     }
 
     return desiredPosition;
 }
 
-void moveIntakeToDesiredPosition(desiredHookPositions desiredHookPosition) {
+void moveIntakeToDesiredPosition(DesiredHookPositions desiredHookPosition) {
     double desiredPosition = findClosestHook(desiredHookPosition); // Find out where the intake needs to rotate to in order to properly position a hook.
 
     intakeHook.move_absolute(desiredPosition, 600); // Starts rotating the intake towards the position.
@@ -93,7 +93,7 @@ void moveIntakeToDesiredPosition(desiredHookPositions desiredHookPosition) {
     while (std::abs(desiredPosition - intakeHook.get_position()) > 0.0125) // While error is greater than 0.0125 keep waiting 5 milliseconds to give the move_absolute function time.
         pros::delay(5);
 
-    if (desiredHookPosition == Top) // If we want to throw a ring off (color sort) then we want a delay to ensure the ring's momentum properly carries it off the hooks
+    if (desiredHookPosition == TOP) // If we want to throw a ring off (color sort) then we want a delay to ensure the ring's momentum properly carries it off the hooks
         pros::delay(500);
 }
 
@@ -102,15 +102,15 @@ void updateIntakeStates() {
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) // When the L1 button is pressed
     {
         // Toggle the intake to the mogo or resting state with the same button
-        if (intakeState == intakeResting || intakeState == intakeReverse)
-            intakeState = intakeMogo;
+        if (intakeState == INTAKERESTING || intakeState == INTAKEREVERSE)
+            intakeState = INTAKEMOGO;
         else
-            intakeState = intakeResting;
+            intakeState = INTAKERESTING;
     }
     else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) // When the R2 button is pressed set the intake to the reverse state
-        intakeState = intakeReverse;                                       
-    else if (intakeState != intakeMogo) // If the last state was reverse and the R2 button was let go, set the intake to its resting state
-        intakeState = intakeResting;
+        intakeState = INTAKEREVERSE;                                       
+    else if (intakeState != INTAKEMOGO) // If the last state was reverse and the R2 button was let go, set the intake to its resting state
+        intakeState = INTAKERESTING;
 
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) // When the down button is pressed toggle the color sorter override
         flipColorSort = !flipColorSort;
@@ -125,14 +125,14 @@ void updateIntakeStates() {
 }
 
 bool checkForColor(bool opposite) {
-    if (autonSelected == redPositiveCorner || autonSelected == redNegativeCorner || autonSelected == skills) {
+    if (autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) {
         // If apart of the red alliance or selected the skills autonomus routine
         if (opposite) // Check for blue rings which have an approximate hue range of 167-210
             return optical.get_hue() > 167;
         else // Check for red rings which have an approximate hue range of 15-18
             return optical.get_hue() < 18;
     }
-    else if (autonSelected == bluePositiveCorner || autonSelected == blueNegativeCorner)  {
+    else if (autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER)  {
         // Same logic as above but vice versa
         if (opposite)
             return optical.get_hue() < 167;
@@ -170,14 +170,14 @@ void handleIntake() {
         if (checkForColor(!flipColorSort) && !overrideColorSort) {
             intakeHook.move_velocity(0); // Stops the intake so that all necessary calcuations can occur
 
-            moveIntakeToDesiredPosition(Top); // Moves a hook to its top position
+            moveIntakeToDesiredPosition(TOP); // Moves a hook to its top position
         }
 
         // Same logic as the color sorter except for moving a hook to its neutral position
         if (findNextDown) { 
             intakeHook.move_velocity(0);
 
-            moveIntakeToDesiredPosition(Neutral);
+            moveIntakeToDesiredPosition(NEUTRAL);
 
             findNextDown = false;
         }
@@ -199,11 +199,11 @@ void handleIntake() {
 
 
 
-        if (intakeState == intakeMogo) // Sets the intake to 600 rpm, running directly to the mogo
+        if (intakeState == INTAKEMOGO) // Sets the intake to 600 rpm, running directly to the mogo
             intakeSpeed = 600;
-        else if (intakeState == intakeResting) // Stops the intake
+        else if (intakeState == INTAKERESTING) // Stops the intake
             intakeSpeed = 0;
-        else if (intakeState == intakeReverse) // Reverses the intake at 600 rpm
+        else if (intakeState == INTAKEREVERSE) // Reverses the intake at 600 rpm
             intakeSpeed = -600;
         
         
