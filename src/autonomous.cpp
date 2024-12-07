@@ -296,7 +296,7 @@ void autonomous() {
 
         base.moveToPoint(37.7, -30.7, 1000, {.forwards = false, .maxSpeed = 69.85, .minSpeed = 44.45, .earlyExitRange = 5});
 
-        base.moveToPose(29.4, -26.6, 55, 2500, {.forwards = false, .maxSpeed = 69.85});
+        base.moveToPose(29.4, -26.6, 125, 2500, {.forwards = false, .maxSpeed = 69.85});
 
         base.waitUntil(10.5);
 
