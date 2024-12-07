@@ -2,6 +2,7 @@
 // includes). We are using the Using standard C++ array library to easily return information and the standard C++ math library to do calculations.
 #include <array>
 #include <cmath>
+#include <string>
 
 #include "lemlib/chassis/chassis.hpp"
 
@@ -54,35 +55,44 @@ enum DesiredHookPositions {
 };
 
 double findClosestHook(DesiredHookPositions desiredHookPosition) {
-    double desiredPosition;                   // Where we want the intake to move to
     std::array<double, 3> potentialPositions; // An array for storing all potentially viable hook positions
+
+    std::cout << intakeHook.get_position() << std::endl;
+
 
     if (desiredHookPosition == TOP) {
         potentialPositions = nextTopHook();
 
+        std::cout << potentialPositions[0] << ", " << potentialPositions[1] << ", " << potentialPositions[2] << std::endl;
+
         // Runs through every item of the potential positions array
         for (int i = 0; i < potentialPositions.size(); i++) {
+            std::cout << potentialPositions[i] << std::endl;
+
             if (potentialPositions[i] - intakeHook.get_position() > 0) // If the value is negative we know that the hook associated with the potential position has already passed the 
-                desiredPosition = potentialPositions[i];               // optical sensor and thus cannot hold the ring. As the potential positions array is arranged from smallest to
+                return potentialPositions[i];                          // optical sensor and thus cannot hold the ring. As the potential positions array is arranged from smallest to
                                                                        // largest, we can confidently assume that the first valid position matches to the correct hook.
-                    
         }
         
     }
     else if (desiredHookPosition == NEUTRAL) {
         potentialPositions = nextNeutralHook();
+
+        std::cout << potentialPositions[0] << ", " << potentialPositions[1] << ", " << potentialPositions[2] << std::endl;
         
         for (int i = 0; i < potentialPositions.size(); i++) {
+            std::cout << potentialPositions[i] << std::endl;
+
             if (potentialPositions[i] - intakeHook.get_position() <= 0) // If the value is positive we know that the hook associated with the potential position needs to move forward to   
-                desiredPosition = potentialPositions[i];                // reach a "neutral position". As we want the intake to move backwards to avoid catching on mogos, we can 
+                return potentialPositions[i];                           // reach a "neutral position". As we want the intake to move backwards to avoid catching on mogos, we can 
                                                                         // immediately discard it. The equal check is to catch when the intake has not moved yet we accidently call it to 
                                                                         // reach a neutral position to avoid breaking the programming. As stated earlier the potential positions array is                                                                         // 
                                                                         // arragned from smallest to largest, however the logic this time is that the last valid position should match to
                                                                         // the correct hook as it would be the closest to the current position without having the intake move forwards.
         }
     }
-
-    return desiredPosition;
+    
+    return 0;
 }
 
 void moveIntakeToDesiredPosition(DesiredHookPositions desiredHookPosition) {
@@ -90,8 +100,12 @@ void moveIntakeToDesiredPosition(DesiredHookPositions desiredHookPosition) {
 
     intakeHook.move_absolute(desiredPosition, 600); // Starts rotating the intake towards the position.
 
-    while (std::abs(desiredPosition - intakeHook.get_position()) > 0.0125) // While error is greater than 0.0125 keep waiting 5 milliseconds to give the move_absolute function time.
+    while (std::abs(desiredPosition - intakeHook.get_position()) > 1.0 / 12.0) // While error is greater than 0.0125 keep waiting 5 milliseconds to give the move_absolute function time.
         pros::delay(5);
+
+    // intakeHook.move_absolute(desiredPosition - 3.0 / 6.0, 600); // Starts rotating the intake towards the position.
+
+    // pros::delay(500);    
 
     if (desiredHookPosition == TOP) // If we want to throw a ring off (color sort) then we want a delay to ensure the ring's momentum properly carries it off the hooks
         pros::delay(500);
@@ -151,8 +165,12 @@ void handleIntake() {
     double lowestHue = 17;
     */
 
+    int modifier = 530;
+
     while (true)
     {
+
+        // std::cout << "Intakestate is " << intakeState << std::endl;
         /* 
         Loggers for debugging
 
@@ -185,7 +203,7 @@ void handleIntake() {
         // This is for storing a ring in the intake when moving towards a goal. Should help with making routes in autonomous and driver controller more convenient 
         if (storeRing) {
             intakePre.move_velocity(600);
-            intakeHook.move_velocity(459);
+            intakeHook.move_velocity(530); // 459
 
             while (!checkForColor(false)) // Wait for a ring to come into the range of the color sensor
                 pros::delay(5);
@@ -209,11 +227,16 @@ void handleIntake() {
         
 
         if (!overrideIntakeState) {
-            intakePre.move_velocity(intakeSpeed);              // Runs the first stage intake at whatever rpm was set
-            intakeHook.move_velocity(intakeSpeed * 459 / 600); // Runs the second stage intake at a slightly slower speed to ensure rings are placed on the mogo properly
+            intakePre.move_velocity(intakeSpeed);                   // Runs the first stage intake at whatever rpm was set
+            intakeHook.move_velocity(intakeSpeed * modifier / 600); // Runs the second stage intake at a slightly slower speed to ensure rings are placed on the mogo properly
         }
 
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
+            modifier += 10;
+        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN))
+            modifier -= 10;
 
+        controller.set_text(0, 5, std::to_string(modifier));
 
         pros::delay(5); // A delay to ensure all processes run smoothly
     }
