@@ -154,43 +154,41 @@ void autonomous() {
 
         base.setPose(-51.7, -30.7, 270);
 
-        base.moveToPoint(-41.3, -30.7, 1000, {.forwards = false, .minSpeed = 95.25, .earlyExitRange = 2});
+        base.setPose(-51.7, -30.7, 270);
 
-        base.moveToPose(-32.9, -32.9, 241, 1000, {.forwards = false});
-        
-        base.waitUntilDone();
+        base.moveToPoint(-37.7, -30.7, 1000, {.forwards = false, .maxSpeed = 69.85, .minSpeed = 44.45, .earlyExitRange = 5});
+
+        base.moveToPose(-29.4, -26.6, 235, 2500, {.forwards = false, .maxSpeed = 69.85});
+
+        base.waitUntil(10.5);
 
         closeClamp(true);
 
         pros::delay(500);
 
         std::cout << "Done getting the first mogo at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
-
-        base.swingToPoint(-24, -48, lemlib::DriveSide::LEFT, 1000);
+        
+        base.turnToPoint(-30, -48, 1000, {.minSpeed = 95});
 
         base.waitUntilDone();
 
         intakeState = INTAKEMOGO;
 
-        base.moveToPose(-24, -48, 155, 1000);
-
-        base.turnToPoint(-50.4, 5.8, 1000);
+        base.moveToPoint(-30, -48, 1500);
 
         base.waitUntilDone();
 
         std::cout << "Done getting the second ring at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
-
-        intakeState = INTAKERESTING;
-
-        closeClamp(false);
-
-        findNextDown = true;
         
         pros::delay(500);
 
-        storeRing = true;
-
         base.moveToPose(-50.4, 5.8, 335, 3000);
+
+        base.waitUntil(48);
+
+        closeClamp(false);
+
+        intakeState = INTAKERESTING;
 
         base.waitUntilDone();
 
@@ -238,7 +236,7 @@ void autonomous() {
 
         std::cout << base.getPose().theta << std::endl;
 
-        base.moveToPose(-31, 19.5, 235, 2500, {.forwards = false});
+        base.moveToPose(-31, 22, 235, 2500, {.forwards = false});
 
         base.waitUntilDone();
 
@@ -254,9 +252,9 @@ void autonomous() {
 
         // base.turnToPoint(-24, 48, 1500);
 
-        base.turnToPoint(-24, 50.0, 1000);
+        base.turnToPoint(-36, 50.0, 1000);
 
-        base.moveToPoint(-24, 50.0, 1500);
+        base.moveToPoint(-36, 50.0, 1500);
 
         base.waitUntilDone();
 
@@ -264,7 +262,7 @@ void autonomous() {
 
         base.swingToPoint(-3.6, 50.6, lemlib::DriveSide::LEFT, 1000);
 
-        base.moveToPoint(-14.8, 50.6, 1500);
+        base.moveToPoint(-28, 50.6, 1500);
 
         base.waitUntilDone();
 
@@ -272,7 +270,7 @@ void autonomous() {
 
         pros::delay(250);
 
-        base.moveToPose(-24, 48, 180, 1500, {.forwards = false});
+        base.moveToPose(-30, 48, 180, 1500, {.forwards = false});
 
         /*
         base.turnToPoint(-14.8, 52, 1500);
@@ -284,7 +282,7 @@ void autonomous() {
         */
 
 
-        base.moveToPose(-24, 9.3, 180, 2000, {.minSpeed = 63.5});
+        base.moveToPose(-30, 9.3, 180, 2000, {.minSpeed = 63.5});
 
         std::cout << "Touching the ladder at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
 
