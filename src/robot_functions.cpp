@@ -149,9 +149,9 @@ bool checkForColor(bool opposite) {
     else if (autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER)  {
         // Same logic as above but vice versa
         if (opposite)
-            return optical.get_hue() < 167;
+            return optical.get_hue() < 18;
         else
-            return optical.get_hue() > 18;
+            return optical.get_hue() > 167;
     }
 
     return false;
