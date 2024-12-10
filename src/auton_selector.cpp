@@ -8,6 +8,7 @@
 
 #include "global_var.h"
 #include "states.h"
+#include <cstddef>
 
 
 
@@ -56,7 +57,7 @@ void basicStyleInitialization(lv_style_t * style, lv_palette_t color) {
     lv_style_set_bg_color(style, lv_palette_main(color)); // Simply setting the background color to associated color
 }
 
-void seclectedStyleInitialization(lv_style_t * style, lv_palette_t color) {
+void selectedStyleInitialization(lv_style_t * style, lv_palette_t color) {
     lv_style_init(style);
     lv_style_set_border_width(style, 10);                             // Sets the border width to 10 pixels
     lv_style_set_border_opa(style, 255);                              // Sets the border opacity (i.e. transparency) to zero
@@ -80,10 +81,57 @@ void styleInitialization() {
 
 
     // Style for selected buttons
-    seclectedStyleInitialization(&styleRedSelected, LV_PALETTE_RED);
-    seclectedStyleInitialization(&styleBlueSelected, LV_PALETTE_BLUE);
-    seclectedStyleInitialization(&styleGreySelected, LV_PALETTE_GREY);
+    selectedStyleInitialization(&styleRedSelected, LV_PALETTE_RED);
+    selectedStyleInitialization(&styleBlueSelected, LV_PALETTE_BLUE);
+    selectedStyleInitialization(&styleGreySelected, LV_PALETTE_GREY);
 }
+
+// Assigns styles to buttons which ends up coloring them
+void styleButtons() {
+    // Styling the skills button
+    lv_obj_add_style(skillsBtn, &styleGrey, LV_STATE_DEFAULT);
+    lv_obj_add_style(skillsBtn, &styleGreySelected, LV_STATE_CHECKED);
+
+
+
+    // Styling the red side autonomous buttons
+    lv_obj_add_style(redSide, &styleRed, LV_STATE_DEFAULT);
+    lv_obj_add_style(redSide, &styleRedSelected, LV_STATE_CHECKED);
+
+    lv_obj_add_style(redPositiveCornerBtn, &styleRed, LV_STATE_DEFAULT);
+    lv_obj_add_style(redPositiveCornerBtn, &styleRedSelected, LV_STATE_CHECKED);
+
+    lv_obj_add_style(redNegativeCornerBtn, &styleRed, LV_STATE_DEFAULT);
+    lv_obj_add_style(redNegativeCornerBtn, &styleRedSelected, LV_STATE_CHECKED);
+
+    lv_obj_add_style(redSoloAWPBtn, &styleRed, LV_STATE_DEFAULT);
+    lv_obj_add_style(redSoloAWPBtn, &styleRedSelected, LV_STATE_CHECKED);
+
+
+
+
+    // Styling the blue side autonomous buttons
+    lv_obj_add_style(blueSide, &styleBlue, LV_STATE_DEFAULT);
+    lv_obj_add_style(blueSide, &styleBlueSelected, LV_STATE_CHECKED);
+
+    lv_obj_add_style(bluePositiveCornerBtn, &styleBlue, LV_STATE_DEFAULT);
+    lv_obj_add_style(bluePositiveCornerBtn, &styleBlueSelected, LV_STATE_CHECKED);
+    
+
+    lv_obj_add_style(blueNegativeCornerBtn, &styleBlue, LV_STATE_DEFAULT);
+    lv_obj_add_style(blueNegativeCornerBtn, &styleBlueSelected, LV_STATE_CHECKED);
+
+    lv_obj_add_style(blueSoloAWPBtn, &styleBlue, LV_STATE_DEFAULT);
+    lv_obj_add_style(blueSoloAWPBtn, &styleBlueSelected, LV_STATE_CHECKED);
+
+
+
+    // Styling the back buttons
+    lv_obj_add_style(backRed, &styleGrey, LV_STATE_DEFAULT);
+    lv_obj_add_style(backBlue, &styleGrey, LV_STATE_DEFAULT);
+}
+
+
 
 // How buttons are visually updated to reflect the chosen autonomous
 void updateStates() {
@@ -133,8 +181,7 @@ void buttonPress(lv_event_t *btnPressed) {
             autonSelected = SKILLS;
         else
             autonSelected = NONE;
-    }
-    else if (btn == redSide)
+    } else if (btn == redSide)
         lv_scr_load(redScreen); // Loads the associated screen, in this case for red autonomous
     else if (btn == blueSide)
         lv_scr_load(blueScreen);
@@ -142,13 +189,12 @@ void buttonPress(lv_event_t *btnPressed) {
 
 
     // Red side buttons
-    if (btn == redPositiveCornerBtn) {
+    else if (btn == redPositiveCornerBtn) {
         if (autonSelected != REDPOSITIVECORNER)
             autonSelected = REDPOSITIVECORNER;
         else
             autonSelected = NONE;
-    }
-    else if (btn == redNegativeCornerBtn) {
+    } else if (btn == redNegativeCornerBtn) {
         if (autonSelected != REDNEGATIVECORNER)
             autonSelected = REDNEGATIVECORNER;
         else
@@ -164,19 +210,17 @@ void buttonPress(lv_event_t *btnPressed) {
 
 
     // Blue side buttons
-    if (btn == bluePositiveCornerBtn) {
+    else if (btn == bluePositiveCornerBtn) {
         if (autonSelected != BLUEPOSITIVECORNER)
             autonSelected = BLUEPOSITIVECORNER;
         else
             autonSelected = NONE;
-    }
-    else if (btn == blueNegativeCornerBtn) {
+    } else if (btn == blueNegativeCornerBtn) {
         if (autonSelected != BLUENEGATIVECORNER)
             autonSelected = BLUENEGATIVECORNER;
         else
             autonSelected = NONE;
-    }
-    else if (btn == blueSoloAWPBtn) {
+    } else if (btn == blueSoloAWPBtn) {
         if (autonSelected != BLUESOLOAWP)
             autonSelected = BLUESOLOAWP;
         else
@@ -185,13 +229,15 @@ void buttonPress(lv_event_t *btnPressed) {
 
 
 
-    if (btn == backRed || btn == backBlue) // Back buttons to return to the homescreen
+    else if (btn == backRed || btn == backBlue) // Back buttons to return to the homescreen
         lv_scr_load(homeScreen);
 
 
 
     updateStates(); // Visualy updates buttons to reflect the current autonomous selection
 }
+
+
 
 // Provides the button with characteristics
 void buttonInitialization(lv_obj_t *btn, int x, int y, int width, int height, const char *name) {
@@ -209,50 +255,7 @@ void buttonInitialization(lv_obj_t *btn, int x, int y, int width, int height, co
     lv_obj_center(label);
 }
 
-// Assigns styles to buttons which ends up coloring them
-void styleButtons() {
-    // Styling the skills button
-    lv_obj_add_style(skillsBtn, &styleGrey, LV_STATE_DEFAULT);
-    lv_obj_add_style(skillsBtn, &styleGreySelected, LV_STATE_CHECKED);
 
-
-
-    // Styling the red side autonomous buttons
-    lv_obj_add_style(redSide, &styleRed, LV_STATE_DEFAULT);
-    lv_obj_add_style(redSide, &styleRedSelected, LV_STATE_CHECKED);
-
-    lv_obj_add_style(redPositiveCornerBtn, &styleRed, LV_STATE_DEFAULT);
-    lv_obj_add_style(redPositiveCornerBtn, &styleRedSelected, LV_STATE_CHECKED);
-
-    lv_obj_add_style(redNegativeCornerBtn, &styleRed, LV_STATE_DEFAULT);
-    lv_obj_add_style(redNegativeCornerBtn, &styleRedSelected, LV_STATE_CHECKED);
-
-    lv_obj_add_style(redSoloAWPBtn, &styleRed, LV_STATE_DEFAULT);
-    lv_obj_add_style(redSoloAWPBtn, &styleRedSelected, LV_STATE_CHECKED);
-
-
-
-
-    // Styling the blue side autonomous buttons
-    lv_obj_add_style(blueSide, &styleBlue, LV_STATE_DEFAULT);
-    lv_obj_add_style(blueSide, &styleBlueSelected, LV_STATE_CHECKED);
-
-    lv_obj_add_style(bluePositiveCornerBtn, &styleBlue, LV_STATE_DEFAULT);
-    lv_obj_add_style(bluePositiveCornerBtn, &styleBlueSelected, LV_STATE_CHECKED);
-    
-
-    lv_obj_add_style(blueNegativeCornerBtn, &styleBlue, LV_STATE_DEFAULT);
-    lv_obj_add_style(blueNegativeCornerBtn, &styleBlueSelected, LV_STATE_CHECKED);
-
-    lv_obj_add_style(blueSoloAWPBtn, &styleBlue, LV_STATE_DEFAULT);
-    lv_obj_add_style(blueSoloAWPBtn, &styleBlueSelected, LV_STATE_CHECKED);
-
-
-
-    // Styling the back buttons
-    lv_obj_add_style(backRed, &styleGrey, LV_STATE_DEFAULT);
-    lv_obj_add_style(backBlue, &styleGrey, LV_STATE_DEFAULT);
-}
 
 // Creates the buttons on the screen
 void autonSelectorInitialization() {
