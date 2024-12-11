@@ -21,6 +21,9 @@ void closeClamp(bool close) {
 void autonomous() {
     optical.set_led_pwm(100);
 
+    // std::ofstream debugger;
+    // debugger.open("debugger.txt");
+
     std::cout << "In autonomous" << std::endl;
 
     int32_t startTime = pros::millis();
@@ -541,9 +544,7 @@ void autonomous() {
         base.moveToPose(30, 9.3, 180, 2000, {.minSpeed = 63.5});
 
         std::cout << "Touching the ladder at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
-    }
-    else if (autonSelected == SKILLS) {
-
+    } else if (autonSelected == SKILLS) {
         base.setPose(-57.8, -17, 302);
 
         // Get mogo
@@ -833,9 +834,58 @@ void autonomous() {
 
         std::cout << "Done with skills at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
 
-    }
-    else if (autonSelected == NONE) {
-        storeRing = true;
+    } else if (autonSelected == NONE) {
+        /*
+        base.setPose(0, 0, 0);
+
+        base.turnToHeading(90, 5000);
+
+        base.waitUntilDone();
+
+        std::cout << "Base at: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+        */
+        
+        base.setPose(0, 0, 0);
+
+        std::cout << "Base at: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+
+        base.moveToPoint(0, 72, 5000);
+
+        base.waitUntilDone();
+
+        std::cout << "Base at: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+
+        /*
+        base.turnToPoint(39.2, 40, 1000);
+
+        base.moveToPose(39.2, 40, 0, 5000);
+
+        base.waitUntilDone();
+
+        std::cout << "At second corner at: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+
+        base.turnToPoint(-39.2, 40, 1000);
+
+        base.moveToPose(-39.2, 40, 270, 5000);
+
+        base.waitUntilDone();
+
+        std::cout << "At third corner at: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+
+        base.turnToPoint(-39.2, -40, 1000);
+
+        base.moveToPose(-39.2, -40, 180, 5000);
+
+        base.waitUntilDone();
+
+        std::cout << "At fourth corner at: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+
+        base.turnToPoint(39.2, -40, 1000);
+
+        base.waitUntilDone();
+
+        std::cout << "Done at: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+        */
     }
 
     optical.set_led_pwm(0);
