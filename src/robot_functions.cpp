@@ -13,9 +13,6 @@
 
 
 
-bool overrideColorSort = false;
-bool flipColorSort = false;
-
 // Top hook positions: 1st = 2.0 / 6.0, 2nd = 17.0 / 6.0, 3rd = 33.0 / 6.0
 // Neural hook position: 1st = 0.0, 2nd = 15.0 / 6.0, 3rd = 31.0 / 6.0
 // The hooks should be at the same positions every 46.0 / 6.0 rotations or 7.6666... rotations (Numbers are based on chains over knobs on a sprocket)
@@ -103,13 +100,12 @@ void moveIntakeToDesiredPosition(DesiredHookPositions desiredHookPosition) {
     while (std::abs(desiredPosition - intakeHook.get_position()) > 1.0 / 12.0) // While error is greater than 0.0125 keep waiting 5 milliseconds to give the move_absolute function time.
         pros::delay(5);
 
-    // intakeHook.move_absolute(desiredPosition - 3.0 / 6.0, 600); // Starts rotating the intake towards the position.
-
-    // pros::delay(500);    
-
     if (desiredHookPosition == TOP) // If we want to throw a ring off (color sort) then we want a delay to ensure the ring's momentum properly carries it off the hooks
         pros::delay(500);
 }
+
+bool overrideColorSort = false;
+bool flipColorSort = false;
 
 void updateIntakeStates() {
     // All the code for controllering the intake state
@@ -120,38 +116,33 @@ void updateIntakeStates() {
             intakeState = INTAKEMOGO;
         else
             intakeState = INTAKERESTING;
-    }
-    else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) // When the R2 button is pressed set the intake to the reverse state
+    } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) // When the R2 button is pressed set the intake to the reverse state
         intakeState = INTAKEREVERSE;                                       
     else if (intakeState != INTAKEMOGO) // If the last state was reverse and the R2 button was let go, set the intake to its resting state
         intakeState = INTAKERESTING;
+
+
 
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) // When the down button is pressed toggle the color sorter override
         flipColorSort = !flipColorSort;
     else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) // When the up button is pressed flip the color the color sorter looks for
         overrideColorSort = !overrideColorSort;
-    
+
+
+
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) // When the up button is pressed flip the color the color sorter looks for
         storeRing = true;
-
-    if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) // When the B button is pressed find the next valid "down" position
+    else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) // When the B button is pressed find the next valid "down" position
         findNextDown = true;
 }
 
 bool checkForColor(bool opposite) {
-    if (autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) {
-        // If apart of the red alliance or selected the skills autonomus routine
-        if (opposite) // Check for blue rings which have an approximate hue range of 167-210
-            return optical.get_hue() > 167;
-        else // Check for red rings which have an approximate hue range of 15-18
-            return optical.get_hue() < 18;
-    }
-    else if (autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER)  {
-        // Same logic as above but vice versa
-        if (opposite)
-            return optical.get_hue() < 18;
-        else
-            return optical.get_hue() > 167;
+    if (((autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) && !opposite) || 
+        ((autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER) && opposite)) {
+            return optical.get_hue() < 18; // Check for red rings which have an approximate hue range of 15-18
+    } else if (((autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) && !opposite) || 
+               ((autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER) && opposite)) {
+            return optical.get_hue() > 167; // Check for blue rings which have an approximate hue range of 167-
     }
 
     return false;
@@ -275,8 +266,7 @@ void handleBase(bool reverse) {
         // Regular chassis controls
         leftVelocity = driveCurve.curve(controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y));
         rightVelocity = driveCurve.curve(controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y));
-    }
-    else {
+    } else {
         // When the chassis is reversed
         leftVelocity = driveCurve.curve(controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y) * -1); // Invert the controllers and swap the sticks
         rightVelocity = driveCurve.curve(controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y) * -1); // (i.e., left now controls rght and vice versa)
