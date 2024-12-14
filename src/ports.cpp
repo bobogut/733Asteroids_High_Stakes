@@ -28,15 +28,15 @@ pros::IMU imu(10); // Set up for the inertial sensor (imu) on port 7
 
 // Set up for the tracking wheels using rotational sensors on port 8 and 9
 pros::Rotation verticalRotationSensor(-8);
-lemlib::TrackingWheel verticalTracking(&verticalRotationSensor, lemlib::Omniwheel::NEW_2, 0.5559155); // The second parameter indicates that
+lemlib::TrackingWheel verticalTracking(&verticalRotationSensor, 2.0, 0.5559155); // The second parameter indicates that
                                                                                                                                       // we are using the VEX 2" anti-static
                                                                                                                                       // wheels. The third parameter indicates
                                                                                                                                       // the offset from the center (in this case
                                                                                                                                       // the vertical offset is accounted for)
 
-pros::Rotation horizontalRotationSensor(-13);
+pros::Rotation horizontalRotationSensor(13);
 lemlib::TrackingWheel horizontalTracking(&horizontalRotationSensor,
-                                         lemlib::Omniwheel::NEW_2, 2.3059155);
+                                         2.0, 2.3059155);
 
 lemlib::OdomSensors sensors // Putting together everything to fully set up odometry in Lemlib
 (
@@ -48,45 +48,26 @@ lemlib::OdomSensors sensors // Putting together everything to fully set up odome
 
 );
 
-/*
 lemlib::ControllerSettings lateralController // PID constants for moving foward/backward
 (
-    10, // 7.5                  // Proportional gains, i.e. the weight of error on the calculation
-    5,                    // Integral gains, i.e. the weight of error accumulation on the calculation
+    7.5, // 7.5                  // Proportional gains, i.e. the weight of error on the calculation
+    0.1,                    // Integral gains, i.e. the weight of error accumulation on the calculation
     25, // 25                    // Derivative gains, i.e. the weight of error change on the calculation
-    1.1544,           // Anti windup
-    0,            // Small error timeout is considered when the robot is within 1" of its goal
-    0, // When error is in the small range for long enough move on to the next motion
-    0,            // Large error timeout is considered when the robot is within 3" of its goal
-    0, // When error is in the large range for long enough move on to the next motion
-    0                   // Maximum acceleration
-);
-*/
-
-lemlib::ControllerSettings lateralController // PID constants for moving foward/backward
-(
-    20, // 7.5                  // Proportional gains, i.e. the weight of error on the calculation
-    0,                    // Integral gains, i.e. the weight of error accumulation on the calculation
-    0, // 25                    // Derivative gains, i.e. the weight of error change on the calculation
-    0,           // Anti windup
-    0,            // Small error timeout is considered when the robot is within 1" of its goal
-    0, // When error is in the small range for long enough move on to the next motion
-    0,            // Large error timeout is considered when the robot is within 3" of its goal
-    0, // When error is in the large range for long enough move on to the next motion
+    1.00335, // Anti windup
+    1,            // Small error timeout is considered when the robot is within 1" of its goal
+    100, // When error is in the small range for long enough move on to the next motion
+    3,            // Large error timeout is considered when the robot is within 3" of its goal
+    500, // When error is in the large range for long enough move on to the next motion
     0                   // Maximum acceleration
 );
 
 lemlib::ControllerSettings angularController // PID constants for turning
 (
     4,
-    0.5,
+    0.45,
     30, // 18.75
-    1.99377,
-    1,
-    100,
-    3,
-    500,
-    0
+    -1.15725333333333,
+    1,100,3,500,0
 );
 
 lemlib::Chassis base // Lemlib set up for the full base
