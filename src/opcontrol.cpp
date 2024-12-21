@@ -3,12 +3,31 @@
 #include "main.h"
 
 #include "ports.h"
+#include "pros/misc.h"
 #include "robot_functions.h"
 #include "states.h"
 
 
 
 void opcontrol() {
+    intakeState = INTAKERESTING;
+
+    if (!initializedBrainCoords) {
+        pros::lcd::initialize(); // initialize brain screen
+
+        pros::Task screen_task([&]() {
+            while (true) {
+                // print robot location to the brain screen
+                pros::lcd::print(0, "X: %f", base.getPose().x);
+                pros::lcd::print(1, "Y: %f", base.getPose().y);
+                pros::lcd::print(2, "Theta: %f", base.getPose().theta);
+                // delay to save resources
+                pros::delay(20);
+            }
+        });
+
+        initializedBrainCoords = true;
+    }
 
     bool reverse = false; // Whether or not the controllers for the chassis should be reversed;
 
