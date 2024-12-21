@@ -10,6 +10,10 @@ extern enum Autons autonSelected;
 
 
 
+extern bool initializedBrainCoords;
+
+
+
 extern bool findNextDown;
 extern bool storeRing;
 
