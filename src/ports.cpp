@@ -34,7 +34,7 @@ lemlib::TrackingWheel verticalTracking(&verticalRotationSensor, 2.0, 0.5559155);
                                                                                                                                       // the offset from the center (in this case
                                                                                                                                       // the vertical offset is accounted for)
 
-pros::Rotation horizontalRotationSensor(13);
+pros::Rotation horizontalRotationSensor(4);
 lemlib::TrackingWheel horizontalTracking(&horizontalRotationSensor,
                                          2.0, 2.3059155);
 
