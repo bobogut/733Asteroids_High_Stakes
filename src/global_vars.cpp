@@ -9,6 +9,10 @@ enum Autons autonSelected;
 
 
 
+bool initializedBrainCoords = false;
+
+
+
 bool findNextDown = false;
 bool storeRing = false;
 
