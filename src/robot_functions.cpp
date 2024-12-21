@@ -140,8 +140,8 @@ bool checkForColor(bool opposite) {
     if (((autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) && !opposite) || 
         ((autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER) && opposite)) {
             return optical.get_hue() < 18; // Check for red rings which have an approximate hue range of 15-18
-    } else if (((autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) && !opposite) || 
-               ((autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER) && opposite)) {
+    } else if (((autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) && opposite) || 
+               ((autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER) && !opposite)) {
             return optical.get_hue() > 167; // Check for blue rings which have an approximate hue range of 167-
     }
 
@@ -160,7 +160,6 @@ void handleIntake() {
 
     while (true)
     {
-
         // std::cout << "Intakestate is " << intakeState << std::endl;
         /* 
         Loggers for debugging
