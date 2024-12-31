@@ -54,10 +54,10 @@ lemlib::ControllerSettings lateralController // PID constants for moving foward/
     0.1,                    // Integral gains, i.e. the weight of error accumulation on the calculation
     25, // 25                    // Derivative gains, i.e. the weight of error change on the calculation
     1.00335, // Anti windup
-    1,            // Small error timeout is considered when the robot is within 1" of its goal
-    100, // When error is in the small range for long enough move on to the next motion
-    3,            // Large error timeout is considered when the robot is within 3" of its goal
-    500, // When error is in the large range for long enough move on to the next motion
+    0,            // Small error timeout is considered when the robot is within 1" of its goal
+    0, // When error is in the small range for long enough move on to the next motion
+    0,            // Large error timeout is considered when the robot is within 3" of its goal
+    0, // When error is in the large range for long enough move on to the next motion
     0                   // Maximum acceleration
 );
 
