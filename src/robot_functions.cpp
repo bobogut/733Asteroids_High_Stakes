@@ -138,12 +138,11 @@ void updateIntakeStates() {
 
 bool checkForColor(bool opposite) {
     if (((autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) && !opposite) || 
-        ((autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER) && opposite)) {
+        ((autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER) && opposite))
             return optical.get_hue() < 18; // Check for red rings which have an approximate hue range of 15-18
-    } else if (((autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) && opposite) || 
-               ((autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER) && !opposite)) {
+    else if (((autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) && opposite) || 
+             ((autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER) && !opposite))
             return optical.get_hue() > 167; // Check for blue rings which have an approximate hue range of 167-
-    }
 
     return false;
 }
@@ -169,13 +168,18 @@ void handleIntake() {
         else if (optical.get_hue() < lowestHue && optical.get_hue() != 0)
             lowestHue = optical.get_hue();
 
-        std::cout << "Color is " << optical.get_hue() << ", time is " << pros::millis() << std::endl; // For figuring out color
         std::cout << "Lowest hue is " << lowestHue << std::endl;
         std::cout << "Highest hue is " << highestHue << std::endl;
+        std::cout << "Color is " << optical.get_hue() << ", time is " << pros::millis() << std::endl; // For figuring out color
+
         */
+
+        // std::cout << ((autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) && !flipColorSort) << std::endl;
 
         // If the driver has not overriden the color sort, look for opposing rings to throw off at the top.
         if (checkForColor(!flipColorSort) && !overrideColorSort) {
+            std::cout << "Here" << std::endl;
+
             intakeHook.move_velocity(0); // Stops the intake so that all necessary calcuations can occur
 
             moveIntakeToDesiredPosition(TOP); // Moves a hook to its top position
@@ -199,7 +203,8 @@ void handleIntake() {
                 pros::delay(5);
 
             // Stop the intake
-            intakePre.move_velocity(0);
+            if (!overrideIntakeState)
+                intakePre.move_velocity(0);
             intakeHook.move_velocity(0);
 
             storeRing = false;
