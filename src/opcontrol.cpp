@@ -10,9 +10,9 @@
 
 
 void opcontrol() {
-    intakeState = INTAKERESTING;
+   global::intakeState = INTAKERESTING;
 
-    if (!initializedBrainCoords) {
+    if (!global::initializedBrainCoords) {
         pros::lcd::initialize(); // initialize brain screen
 
         pros::Task screen_task([&]() {
@@ -26,12 +26,12 @@ void opcontrol() {
             }
         });
 
-        initializedBrainCoords = true;
+        global::initializedBrainCoords = true;
     }
 
     bool reverse = false; // Whether or not the controllers for the chassis should be reversed;
 
-    if (autonSelected == SKILLS)
+    if (global::autonSelected == Skills)
         reverse = true;
 
 

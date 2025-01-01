@@ -2,7 +2,6 @@
 // includes). We are using the Using standard C++ array library to easily return information and the standard C++ math library to do calculations.
 #include <array>
 #include <cmath>
-#include <string>
 
 #include "lemlib/chassis/chassis.hpp"
 
@@ -112,14 +111,14 @@ void updateIntakeStates() {
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) // When the L1 button is pressed
     {
         // Toggle the intake to the mogo or resting state with the same button
-        if (intakeState == INTAKERESTING || intakeState == INTAKEREVERSE)
-            intakeState = INTAKEMOGO;
+        if (global::intakeState == INTAKERESTING ||global::intakeState == INTAKEREVERSE)
+           global::intakeState = IntakeMogo;
         else
-            intakeState = INTAKERESTING;
+           global::intakeState = INTAKERESTING;
     } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) // When the R2 button is pressed set the intake to the reverse state
-        intakeState = INTAKEREVERSE;                                       
-    else if (intakeState != INTAKEMOGO) // If the last state was reverse and the R2 button was let go, set the intake to its resting state
-        intakeState = INTAKERESTING;
+       global::intakeState = INTAKEREVERSE;                                       
+    else if (global::intakeState != IntakeMogo) // If the last state was reverse and the R2 button was let go, set the intake to its resting state
+       global::intakeState = INTAKERESTING;
 
 
 
@@ -131,17 +130,17 @@ void updateIntakeStates() {
 
 
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) // When the up button is pressed flip the color the color sorter looks for
-        storeRing = true;
+        global::storeRing = true;
     else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) // When the B button is pressed find the next valid "down" position
-        findNextDown = true;
+        global::findNextDown = true;
 }
 
 bool checkForColor(bool opposite) {
-    if (((autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) && !opposite) || 
-        ((autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER) && opposite))
+    if (((global::autonSelected == RedPositiveCorner || global::autonSelected == RedNegativeCorner || global::autonSelected == Skills) && !opposite) || 
+        ((global::autonSelected == BluePositiveCorner || global::autonSelected == BlueNegativeCorner) && opposite))
             return optical.get_hue() < 18; // Check for red rings which have an approximate hue range of 15-18
-    else if (((autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) && opposite) || 
-             ((autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER) && !opposite))
+    else if (((global::autonSelected == RedPositiveCorner || global::autonSelected == RedNegativeCorner || global::autonSelected == Skills) && opposite) || 
+             ((global::autonSelected == BluePositiveCorner || global::autonSelected == BlueNegativeCorner) && !opposite))
             return optical.get_hue() > 167; // Check for blue rings which have an approximate hue range of 167-
 
     return false;
@@ -154,12 +153,13 @@ void handleIntake() {
     double highestHue = 18;
     double lowestHue = 17;
     */
-
+    
+    int intakeSpeed;
     int modifier = 530;
 
     while (true)
     {
-        // std::cout << "Intakestate is " << intakeState << std::endl;
+        // std::cout << "global::intakeState is " <<global::intakeState << std::endl;
         /* 
         Loggers for debugging
 
@@ -174,7 +174,7 @@ void handleIntake() {
 
         */
 
-        // std::cout << ((autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == SKILLS) && !flipColorSort) << std::endl;
+        // std::cout << ((global::autonSelected == RedPositiveCorner || global::autonSelected == RedNegativeCorner || global::autonSelected == Skills) && !flipColorSort) << std::endl;
 
         // If the driver has not overriden the color sort, look for opposing rings to throw off at the top.
         if (checkForColor(!flipColorSort) && !overrideColorSort) {
@@ -186,16 +186,16 @@ void handleIntake() {
         }
 
         // Same logic as the color sorter except for moving a hook to its neutral position
-        if (findNextDown) { 
+        if (global::findNextDown) { 
             intakeHook.move_velocity(0);
 
             moveIntakeToDesiredPosition(NEUTRAL);
 
-            findNextDown = false;
+            global::findNextDown = false;
         }
 
         // This is for storing a ring in the intake when moving towards a goal. Should help with making routes in autonomous and driver controller more convenient 
-        if (storeRing) {
+        if (global::storeRing) {
             intakePre.move_velocity(600);
             intakeHook.move_velocity(530); // 459
 
@@ -203,35 +203,38 @@ void handleIntake() {
                 pros::delay(5);
 
             // Stop the intake
-            if (!overrideIntakeState)
+            if (!global::overrideIntakeState)
                 intakePre.move_velocity(0);
             intakeHook.move_velocity(0);
 
-            storeRing = false;
+            global::storeRing = false;
         }
 
 
 
-        if (intakeState == INTAKEMOGO) // Sets the intake to 600 rpm, running directly to the mogo
+        if (global::intakeState == IntakeMogo) // Sets the intake to 600 rpm, running directly to the mogo
             intakeSpeed = 600;
-        else if (intakeState == INTAKERESTING) // Stops the intake
+        else if (global::intakeState == INTAKERESTING) // Stops the intake
             intakeSpeed = 0;
-        else if (intakeState == INTAKEREVERSE) // Reverses the intake at 600 rpm
+        else if (global::intakeState == INTAKEREVERSE) // Reverses the intake at 600 rpm
             intakeSpeed = -600;
         
         
 
-        if (!overrideIntakeState) {
+        if (!global::overrideIntakeState) {
             intakePre.move_velocity(intakeSpeed);                   // Runs the first stage intake at whatever rpm was set
             intakeHook.move_velocity(intakeSpeed * modifier / 600); // Runs the second stage intake at a slightly slower speed to ensure rings are placed on the mogo properly
         }
 
+        /*
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
             modifier += 10;
         else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN))
             modifier -= 10;
 
         controller.set_text(0, 5, std::to_string(modifier));
+        */
+
 
         pros::delay(5); // A delay to ensure all processes run smoothly
     }
@@ -244,7 +247,7 @@ void handlePneumatics() {
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
 
         if (mogoClamp.is_extended()) // If the clamp is retracted, reverse the intake to a neutral position
-            findNextDown = true;
+            global::findNextDown = true;
         
         mogoClamp.toggle();
     }

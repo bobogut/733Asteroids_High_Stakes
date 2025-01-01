@@ -17,12 +17,12 @@ void initialize() {
 
 
 
-	autonSelected = NONE;
+	global::autonSelected = None;
 
 
 	// Default intake states
-	intakeState = INTAKERESTING;
-	overrideIntakeState = false;
+	global::intakeState = INTAKERESTING;
+	global::overrideIntakeState = false;
 	
 
 

@@ -150,24 +150,24 @@ void updateStates() {
 
 
     // Adds the checked state to the button matching the autonomous selected
-    if (autonSelected == SKILLS)
+    if (global::autonSelected == Skills)
         lv_obj_add_state(skillsBtn, LV_STATE_CHECKED);
-    else if (autonSelected == REDPOSITIVECORNER)
+    else if (global::autonSelected == RedPositiveCorner)
         lv_obj_add_state(redPositiveCornerBtn, LV_STATE_CHECKED);
-    else if (autonSelected == REDNEGATIVECORNER)
+    else if (global::autonSelected == RedNegativeCorner)
         lv_obj_add_state(redNegativeCornerBtn, LV_STATE_CHECKED);
-    else if (autonSelected == REDSOLOAWP)
+    else if (global::autonSelected == RedSoloAWP)
         lv_obj_add_state(redSoloAWPBtn, LV_STATE_CHECKED);
-    else if (autonSelected == BLUEPOSITIVECORNER)
+    else if (global::autonSelected == BluePositiveCorner)
         lv_obj_add_state(bluePositiveCornerBtn, LV_STATE_CHECKED);
-    else if (autonSelected == BLUENEGATIVECORNER)
+    else if (global::autonSelected == BlueNegativeCorner)
         lv_obj_add_state(blueNegativeCornerBtn, LV_STATE_CHECKED);
-    else if (autonSelected == BLUESOLOAWP)
+    else if (global::autonSelected == BlueSoloAWP)
         lv_obj_add_state(blueSoloAWPBtn, LV_STATE_CHECKED);
 
-    if (autonSelected == REDPOSITIVECORNER || autonSelected == REDNEGATIVECORNER || autonSelected == REDSOLOAWP)
+    if (global::autonSelected == RedPositiveCorner || global::autonSelected == RedNegativeCorner || global::autonSelected == RedSoloAWP)
         lv_obj_add_state(redSide, LV_STATE_CHECKED);
-    else if (autonSelected == BLUEPOSITIVECORNER || autonSelected == BLUENEGATIVECORNER || autonSelected == BLUESOLOAWP)
+    else if (global::autonSelected == BluePositiveCorner || global::autonSelected == BlueNegativeCorner || global::autonSelected == BlueSoloAWP)
         lv_obj_add_state(blueSide, LV_STATE_CHECKED);
 }
 
@@ -177,10 +177,10 @@ void buttonPress(lv_event_t *btnPressed) {
 
     // Home screen buttons
     if (btn == skillsBtn) {
-        if (autonSelected != SKILLS) // Serves as a toggle, in this case for selecting skills
-            autonSelected = SKILLS;
+        if (global::autonSelected != Skills) // Serves as a toggle, in this case for selecting skills
+            global::autonSelected = Skills;
         else
-            autonSelected = NONE;
+            global::autonSelected = None;
     } else if (btn == redSide)
         lv_scr_load(redScreen); // Loads the associated screen, in this case for red autonomous
     else if (btn == blueSide)
@@ -190,41 +190,41 @@ void buttonPress(lv_event_t *btnPressed) {
 
     // Red side buttons
     else if (btn == redPositiveCornerBtn) {
-        if (autonSelected != REDPOSITIVECORNER)
-            autonSelected = REDPOSITIVECORNER;
+        if (global::autonSelected != RedPositiveCorner)
+            global::autonSelected = RedPositiveCorner;
         else
-            autonSelected = NONE;
+            global::autonSelected = None;
     } else if (btn == redNegativeCornerBtn) {
-        if (autonSelected != REDNEGATIVECORNER)
-            autonSelected = REDNEGATIVECORNER;
+        if (global::autonSelected != RedNegativeCorner)
+            global::autonSelected = RedNegativeCorner;
         else
-            autonSelected = NONE;
+            global::autonSelected = None;
     }
     else if (btn == redSoloAWPBtn) {
-        if (autonSelected != REDSOLOAWP)
-            autonSelected = REDSOLOAWP;
+        if (global::autonSelected != RedSoloAWP)
+            global::autonSelected = RedSoloAWP;
         else
-            autonSelected = NONE;
+            global::autonSelected = None;
     }
 
 
 
     // Blue side buttons
     else if (btn == bluePositiveCornerBtn) {
-        if (autonSelected != BLUEPOSITIVECORNER)
-            autonSelected = BLUEPOSITIVECORNER;
+        if (global::autonSelected != BluePositiveCorner)
+            global::autonSelected = BluePositiveCorner;
         else
-            autonSelected = NONE;
+            global::autonSelected = None;
     } else if (btn == blueNegativeCornerBtn) {
-        if (autonSelected != BLUENEGATIVECORNER)
-            autonSelected = BLUENEGATIVECORNER;
+        if (global::autonSelected != BlueNegativeCorner)
+            global::autonSelected = BlueNegativeCorner;
         else
-            autonSelected = NONE;
+            global::autonSelected = None;
     } else if (btn == blueSoloAWPBtn) {
-        if (autonSelected != BLUESOLOAWP)
-            autonSelected = BLUESOLOAWP;
+        if (global::autonSelected != BlueSoloAWP)
+            global::autonSelected = BlueSoloAWP;
         else
-            autonSelected = NONE;
+            global::autonSelected = None;
     }
 
 

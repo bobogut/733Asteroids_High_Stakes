@@ -6,23 +6,15 @@
 
 
 
-extern enum Autons autonSelected;
+namespace global {
+    inline Autons autonSelected;
+    inline bool initializedBrainCoords;
 
+    inline bool findNextDown = false;
+    inline bool storeRing = false;
+    inline bool overrideIntakeState = false;
 
+    inline enum IntakeStates intakeState = INTAKERESTING;
+}
 
-extern bool initializedBrainCoords;
-
-
-
-extern bool findNextDown;
-extern bool storeRing;
-
-
-
-extern enum IntakeStates intakeState;
-extern int intakeSpeed;
-extern bool overrideIntakeState;
-
-
-
-extern pros::Controller controller;
+inline pros::Controller controller(pros::E_CONTROLLER_MASTER);
