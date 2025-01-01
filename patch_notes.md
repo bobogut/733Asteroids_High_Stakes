@@ -1,6 +1,11 @@
 For tracking changes and going into greater detail after December 10, 2024.
 
-Dec 31, 2024 (technically Dec 21, just forgot to commit):
+Dec 31, 2024
+- Created a global variable namespace so things are clearing the code
+- Messing around with functions for autonomous routines so that the path can be mirrored easily and without
+too much human interaction (me when I forget a minus sign)
+
+Dec 31, 2024 (technically Dec 21, just forgot to commit, tournament changes):
 - Fixed autonomous paths
 - Deleted unnecessary brackets
 - Removed error timeouts for lateral movement as it was messing with the autonomous and we didn't have time to fix it
