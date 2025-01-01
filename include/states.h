@@ -3,20 +3,20 @@
 
 
 enum Autons {
-  REDPOSITIVECORNER,
-  REDNEGATIVECORNER,
-  REDSOLOAWP,
-  BLUEPOSITIVECORNER,
-  BLUENEGATIVECORNER,
-  BLUESOLOAWP,
-  SKILLS,
-  NONE
+  RedPositiveCorner,
+  RedNegativeCorner,
+  RedSoloAWP,
+  BluePositiveCorner,
+  BlueNegativeCorner,
+  BlueSoloAWP,
+  Skills,
+  None
 };
 
 
 
 enum IntakeStates {
-  INTAKEMOGO,
+  IntakeMogo,
   INTAKEREVERSE,
   INTAKERESTING,
   INTAKETESTING
