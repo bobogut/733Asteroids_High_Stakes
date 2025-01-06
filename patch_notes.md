@@ -1,7 +1,10 @@
 For tracking changes and going into greater detail after December 10, 2024.
 
+Jan 6, 2025
+- Created various classes (Point and Swing) to make storing information easier
+
 Dec 31, 2024
-- Created a global variable namespace so things are clearing the code
+- Created a global variable namespace so things are clearing in the code
 - Messing around with functions for autonomous routines so that the path can be mirrored easily and without
 too much human interaction (me when I forget a minus sign)
 
