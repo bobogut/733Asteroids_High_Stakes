@@ -7,6 +7,7 @@
 #include "ports.h"
 #include "pros/rtos.hpp"
 #include "states.h"
+#include <cstddef>
 #include <cstdint>
 
 
@@ -21,11 +22,11 @@ void closeClamp(bool close) {
 
 
 
-double reflectAngle(double originalAngle) {
+float reflectAngle(float originalAngle) {
     return 360 - originalAngle;
 }
 
-double reflectX(double originalX) {
+float reflectX(float originalX) {
     return -originalX;
 }
 
@@ -46,7 +47,7 @@ class Point {
         float x;
         float y;
 
-        Point(float x, float y, float theta = 0);
+        Point(float x, float y);
 };
 
 Point reflectPoint(Point originalPoint) {
@@ -58,24 +59,63 @@ Point reflectPoint(Point originalPoint) {
     return newPoint;
 }
 
+class Swing {
+    public:
+        float x;
+        float y;
+        float theta;
+        lemlib::DriveSide lockedSide;
+
+        Swing(float x, float y, lemlib::DriveSide lockedSide);
+        Swing(float theta, lemlib::DriveSide lockedSide);
+};
+
+lemlib::DriveSide reflectDriveSide(lemlib::DriveSide originalLockedSide) {
+    if (originalLockedSide == lemlib::DriveSide::LEFT)
+        return lemlib::DriveSide::RIGHT;
+    else
+        return lemlib::DriveSide::LEFT;
+}
+
+Swing reflectSwing(float originalTheta, lemlib::DriveSide originalLockedSide) {
+    Swing newSwing(NAN, lemlib::DriveSide::LEFT);
+
+    newSwing.theta = reflectAngle(originalTheta);
+    newSwing.lockedSide = reflectDriveSide(originalLockedSide);
+
+    return newSwing;
+}
+
+Swing reflectSwing(float originalX, float originalY, lemlib::DriveSide originalLockedSide) {
+    Swing newSwing(NAN, NAN, lemlib::DriveSide::LEFT);
+
+    newSwing.x = reflectX(originalX);
+    newSwing.y = originalY;
+    newSwing.lockedSide = originalLockedSide;
+
+    return newSwing;
+}
 
 
-void positiveCornerRoutine(bool blueSideAutonomous) {
+void positiveCornerRoutine(bool blueSide) {
     // All coordiantes are by default meant for the red side
     int32_t startTime = pros::millis();
 
     lemlib::Pose startingPosition(-51.3, -24, 270);
-    lemlib::Pose firstMogoGoal(-35.2, -24, 270);
+    lemlib::Pose safeMogo(-35.2, -24, 270);
     Point secondRing(-24, -48);
     Point ladder(-9.6, -26.2);
 
-    if (blueSideAutonomous) {
+    if (blueSide) {
         startingPosition = reflectPose(startingPosition);
+        safeMogo = reflectPose(safeMogo);
+        secondRing = reflectPoint(secondRing);
+        ladder = reflectPoint(ladder);
     }
 
     base.setPose(startingPosition.x, startingPosition.y, startingPosition.theta);
 
-    base.moveToPose(firstMogoGoal.x, firstMogoGoal.y, firstMogoGoal.theta, 1500, {.forwards = false});
+    base.moveToPose(safeMogo.x, safeMogo.y, safeMogo.theta, 1500, {.forwards = false});
 
     base.waitUntilDone();
 
@@ -135,6 +175,125 @@ void positiveCornerRoutine(bool blueSideAutonomous) {
     std::cout << "Got to the ladder at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
 }
 
+void ringRushRoutine(bool blueSide) {
+    // All coordiantes are by default meant for the red side
+    int32_t startTime = pros::millis();
+
+    lemlib::Pose startingPosition(-51.6, 36.2, 270);
+    Point prepTurn(-11.0, 36.2);
+    lemlib::DriveSide faceWall = lemlib::DriveSide::RIGHT;
+    float twoRingsY = 54.4;
+    Swing mogoHeading(5, lemlib::DriveSide::RIGHT);
+    Point mogo(-24, 24);
+    Point ladder(-9.6, -26.2);
+    Point thirdRing(-24, 48);
+    Point preload(-53,36.2);
+
+    if (blueSide) {
+        startingPosition = reflectPose(startingPosition);
+        faceWall = reflectDriveSide(faceWall);
+        mogoHeading = reflectSwing(mogoHeading.theta, mogoHeading.lockedSide);
+    }
+
+    base.setPose(startingPosition.x, startingPosition.y, startingPosition.theta);
+
+    global::storeRing = true;
+
+    base.moveToPoint(prepTurn.x, prepTurn.y, 3000, {.minSpeed = 44.45, .earlyExitRange = 2});
+
+    base.swingToHeading(0, faceWall, 1000);
+
+    base.waitUntilDone();
+
+    std::cout << "Turned at time: " << pros::millis() - startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+
+
+
+
+
+
+
+    global::overrideIntakeState = true;
+
+    intakePre.move_velocity(600);
+
+    base.moveToPose(base.getPose().x, twoRingsY, 0, 2000);
+
+    base.waitUntilDone();
+
+    std::cout << "Done storing two rings at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+
+
+
+
+
+
+
+
+    base.swingToHeading(mogoHeading.theta, mogoHeading.lockedSide, 1500, {.minSpeed = 31.75, .earlyExitRange = 3});
+
+    base.waitUntilDone();
+
+    std::cout << "First swing at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+
+    /*
+    base.swingToPoint(mogo.x, mogo.y, lemlib::DriveSide::RIGHT, 1500, {.forwards = false});
+
+    base.waitUntilDone();
+
+    std::cout << "Second swing at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+    */
+
+    base.moveToPose(mogo.x, mogo.y, 307, 1000, {.forwards = false});
+
+    base.waitUntil(8);
+
+    closeClamp(true);
+
+    global::overrideIntakeState = false;
+
+    pros::delay(250);
+
+    std::cout << "Got the first mogo at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+
+
+
+
+
+
+    base.turnToPoint(thirdRing.x, thirdRing.y, 1000);
+
+    base.waitUntilDone();
+
+    global::intakeState = IntakeMogo;
+
+    base.moveToPoint(thirdRing.x, thirdRing.y, 1000);
+
+    base.turnToPoint(preload.x, preload.y, 1000);
+
+    base.moveToPoint(preload.x, preload.y, 3000);
+}
+
+void goalRushRoutine(bool blueSide) {
+    int32_t startTime = pros::millis();
+
+    lemlib::Pose startingPosition(-51.3, -36.2, 270);
+    lemlib::Pose centerMogoGoal(-35.2, -36.2, 270);
+    Point secondRing(-24, -48);
+    Point ladder(-9.6, -26.2);
+
+    if (blueSide) {
+        startingPosition = reflectPose(startingPosition);
+        centerMogoGoal = reflectPose(centerMogoGoal);
+        secondRing = reflectPoint(secondRing);
+        ladder = reflectPoint(ladder);
+    }
+
+    base.setPose(startingPosition.x, startingPosition.y, startingPosition.theta);
+
+    base.moveToPoint(centerMogoGoal.x, centerMogoGoal.y, 3000, {.forwards = false});
+}
+
 void autonomous() {
     if (!global::initializedBrainCoords) {
         pros::lcd::initialize(); // initialize brain screen
@@ -153,6 +312,8 @@ void autonomous() {
         global::initializedBrainCoords = true;
     }
 
+
+
     optical.set_led_pwm(100);
 
     // std::ofstream debugger;
@@ -162,8 +323,8 @@ void autonomous() {
 
     int32_t startTime = pros::millis();
 
-    leftMotors.set_brake_mode_all(pros::v5::MotorBrake::hold);
-	rightMotors.set_brake_mode_all(pros::v5::MotorBrake::hold);
+    // leftMotors.set_brake_mode_all(pros::v5::MotorBrake::hold);
+	// rightMotors.set_brake_mode_all(pros::v5::MotorBrake::hold);
 
 
 
@@ -297,69 +458,7 @@ void autonomous() {
 
         std::cout << "Touching the ladder at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
     } else if (global::autonSelected == BluePositiveCorner) {
-        base.setPose(51.7, -30.7, 90);
-
-        base.moveToPoint(37.7, -30.7, 1000, {.forwards = false, .maxSpeed = 69.85, .minSpeed = 44.45, .earlyExitRange = 5});
-
-        base.moveToPose(29.4, -26.6, 125, 2500, {.forwards = false, .maxSpeed = 69.85});
-
-        base.waitUntil(10.5);
-
-        closeClamp(true);
-
-        pros::delay(250);
-
-        std::cout << "Done getting the first mogo at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
-        
-        base.turnToPoint(30, -48, 1000, {.minSpeed = 95});
-
-        base.waitUntilDone();
-
-        global::intakeState = IntakeMogo;
-
-        base.moveToPoint(30, -48, 1500);
-
-        base.waitUntilDone();
-
-        std::cout << "Done getting the second ring at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
-
-        global::intakeState = INTAKERESTING;
-
-        /*
-
-        base.turnToPoint(-60, -53.8, 1000);
-
-        base.waitUntilDone();
-
-       global::intakeState = IntakeMogo;
-
-        base.moveToPoint(-60, -53.8, 3000);
-
-        base.turnToHeading(230, 1000);
-
-        base.waitUntilDone();
-
-        std::cout << "Got to the corner at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
-
-        doinker.extend();
-
-        pros::delay(500);
-
-        base.swingToHeading(90, lemlib::DriveSide::LEFT, 1000);
-
-        */
-
-        base.turnToPoint(9.6, 26.2, 1000);
-
-        base.waitUntilDone();
-
-        closeClamp(false);
-
-        pros::delay(250);
-
-        base.moveToPoint(9.6, -26.2, 3000);
-
-        std::cout << "Got to the ladder at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
+        positiveCornerRoutine(true);  
     } else if (global::autonSelected == BlueNegativeCorner) {
         // Negative corner auton
         base.setPose(51.6, 36.2, 270);
