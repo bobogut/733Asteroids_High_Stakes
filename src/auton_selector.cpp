@@ -255,8 +255,6 @@ void buttonInitialization(lv_obj_t *btn, int x, int y, int width, int height, co
     lv_obj_center(label);
 }
 
-
-
 // Creates the buttons on the screen
 void autonSelectorInitialization() {
     // lv_disp_set_rotation(NULL, LV_DISP_ROT_270); // Look at for rotating https://github.com/lvgl/lvgl/issues/4060
