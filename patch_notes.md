@@ -1,5 +1,13 @@
 For tracking changes and going into greater detail after December 10, 2024.
 
+Jan 21, 2025
+- Moved some function defintions from robot funcitons to opcontrol, may move them back if I figure better categorization later
+- Disabled color sorter for Jan 19, 2025 competition as we did not have the optical sensor then
+- PID constants need retuning as the bot has been rebuilt, lateral tracking wheel has been removed and replaced with chassis IMEs
+- Merged intake motors into a motor group, though it will be transformed into a single motor upon the construciton of a lady brown
+- Added an image to the brain for some cosmetic fun
+- Started laying the groundwork for writing to a micro SD card for a robotics-related coding project
+
 Jan 6, 2025
 - Created various classes (Point and Swing) to make storing information easier
 
