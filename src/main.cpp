@@ -4,12 +4,19 @@
 
 #include "auton_selector.h"
 #include "ports.h"
+#include "pros/abstract_motor.hpp"
+#include "pros/rtos.h"
+#include "pros/rtos.hpp"
 #include "robot_functions.h"
 
 
 
 void initialize() {
-	optical.set_led_pwm(0); // Turn off the LED on the optical sensor to avoid draining too much from the battery
+	pros::task_t writeToFile = pros::Task::create( storeCoordinates, "Store cooridnates in SD card");
+
+
+
+	// optical.set_led_pwm(0); // Turn off the LED on the optical sensor to avoid draining too much from the battery
 
 
 
@@ -27,14 +34,18 @@ void initialize() {
 
 
 	// Reset the intake motor positions
-	intakePre.tare_position();
-	intakeHook.tare_position();
+	// intakePre.tare_position();
+	// intakeHook.tare_position();
 
-	std::cout << intakeHook.get_position() << std::endl;
+	intake.tare_position();
+
+	std::cout << intake.get_position_all()[0] << intake.get_position_all()[1] << std::endl;
 
 	// Set the intake motors to coast (i.e. when a movement is over gradually slow down) to avoid burnout, should only add some minor drift
-	intakePre.set_brake_mode(pros::v5::MotorBrake::coast);
-	intakeHook.set_brake_mode(pros::v5::MotorBrake::coast);
+	// intakePre.set_brake_mode(pros::v5::MotorBrake::coast);
+	// intakeHook.set_brake_mode(pros::v5::MotorBrake::coast);
+
+	intake.set_brake_mode(pros::v5::MotorBrake::coast);
 
 	pros::task_t updateIntakeSpeed = pros::Task::create(handleIntake, "Update intake speed"); // Create a task for moving the intake so that the rest of the code will not 
 																											  // potentially be interrupted
@@ -58,7 +69,7 @@ void initialize() {
 	if (rightMotors.is_over_temp_all()[0] || rightMotors.is_over_temp_all()[1] || rightMotors.is_over_temp_all()[2])
 		controller.rumble("_ - -");
 
-	if (intakePre.is_over_temp() || intakeHook.is_over_temp())
+	if (intake.is_over_temp())
 		controller.rumble("_ - _");
 }
 
@@ -66,7 +77,8 @@ void initialize() {
 
 void disabled() {}
 
-
+// FILE* brainImage = fopen("/usd/brain_image.c", "r");
+// LV_IMG_DECLARE(brain_image);
 
 void competition_initialize() {
 	autonSelectorInitialization(); // Creates buttons on the brain screen for selecting autonomous routines
