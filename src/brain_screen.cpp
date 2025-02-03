@@ -7,11 +7,16 @@
 
 
 LV_IMG_DECLARE(brain_image);
-lv_obj_t *img = lv_img_create(lv_scr_act());
+
+lv_obj_t *brainImg = lv_obj_create(NULL);
+
+lv_obj_t *img = lv_img_create(brainImg);
 
 void setBrainImage() {
     lv_img_set_src(img, &brain_image);
     lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
+
+    lv_scr_load(brainImg);
 }
 
 void robotCoordinates() {
