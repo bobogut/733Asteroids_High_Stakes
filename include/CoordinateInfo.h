@@ -4,42 +4,36 @@
 
 
 class CoordianteInfo {
-    float reflectAngle(float originalAngle) {
-        return 360 - originalAngle;
-    }
+    public:
+        float reflectAngle(float originalAngle) {
+            return 360 - originalAngle;
+        }
 
-    float reflectX(float originalX) {
-        return -originalX;
-    }
+        float reflectX(float originalX) {
+            return -originalX;
+        }
 
-    lemlib::DriveSide reflectDriveSide(lemlib::DriveSide lockedSide) {
-        if (lockedSide == lemlib::DriveSide::LEFT)
-            return lemlib::DriveSide::RIGHT;
-        else
-            return  lemlib::DriveSide::LEFT;
-    }
+        lemlib::DriveSide reflectDriveSide(lemlib::DriveSide lockedSide) {
+            if (lockedSide == lemlib::DriveSide::LEFT)
+                return lemlib::DriveSide::RIGHT;
+            else
+                return  lemlib::DriveSide::LEFT;
+        }
 };
 
 class MyPoint : private CoordianteInfo {
-    private:
-        float reflectX(float originalX);
-
     public:
         float x;
         float y;
 
-        MyPoint(float x, float y)  : x(x), y(y) {}
+        MyPoint(float x, float y) : x(x), y(y) {}
 
         void reflect() {
-            x = reflectX(x);
+            x = CoordianteInfo::reflectX(x);
         }
 };
 
 class MyPose : private CoordianteInfo {
-    private:
-        float reflectAngle(float originalAngle);
-        float reflectX(float originalX);
-
     public:
         float x;
         float y;
@@ -48,16 +42,12 @@ class MyPose : private CoordianteInfo {
         MyPose(float x, float y, float theta) : x(x), y(y), theta(theta) {}
     
         void reflect() {
-            x = reflectX(x);
-            theta = reflectAngle(theta);
+            x = CoordianteInfo::reflectX(x);
+            theta = CoordianteInfo::reflectAngle(theta);
         }
 };
 
 class MySwingPoint : private CoordianteInfo {
-    private:
-        float reflectX(float originalX);
-        lemlib::DriveSide reflectDriveSide(lemlib::DriveSide lockedSide);
-
     public:
         float x;
         float y;
@@ -66,16 +56,12 @@ class MySwingPoint : private CoordianteInfo {
         MySwingPoint(float x, float y, lemlib::DriveSide lockedSide) : x(x), y(y), lockedSide(lockedSide) {}
 
         void reflect() {
-            x = reflectX(x);
-            lockedSide = reflectDriveSide(lockedSide);
+            x = CoordianteInfo::reflectX(x);
+            lockedSide = CoordianteInfo::reflectDriveSide(lockedSide);
         }
 };
 
 class MySwingTheta : private CoordianteInfo {
-    private:
-        float reflectAngle(float originalAngle);
-        lemlib::DriveSide reflectDriveSide(lemlib::DriveSide lockedSide);
-
     public:
         float theta;
         lemlib::DriveSide lockedSide;
@@ -83,7 +69,7 @@ class MySwingTheta : private CoordianteInfo {
         MySwingTheta(float theta, lemlib::DriveSide lockedSide) : theta(theta), lockedSide(lockedSide) {}
 
         void reflect() {
-            theta = reflectAngle(theta);
-            lockedSide = reflectDriveSide(lockedSide);
+            theta = CoordianteInfo::reflectAngle(theta);
+            lockedSide = CoordianteInfo::reflectDriveSide(lockedSide);
         }
 };
