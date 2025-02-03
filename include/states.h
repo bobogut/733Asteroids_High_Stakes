@@ -1,23 +1,40 @@
 #pragma once
 
+namespace states {
+  namespace autonStates {
+    enum Autons {
+      RedPositiveCorner,
+      RedNegativeCorner,
+      RedSoloAWP,
+      BluePositiveCorner,
+      BlueNegativeCorner,
+      BlueSoloAWP,
+      Skills,
+      None
+    };
+  }
 
 
-enum Autons {
-  RedPositiveCorner,
-  RedNegativeCorner,
-  RedSoloAWP,
-  BluePositiveCorner,
-  BlueNegativeCorner,
-  BlueSoloAWP,
-  Skills,
-  None
-};
+
+  namespace intakeStates {
+    enum IntakeStates {
+      Resting,
+      Mogo,
+      Arm,
+      Reverse
+    };
+  }
 
 
 
-enum IntakeStates {
-  IntakeMogo,
-  INTAKEREVERSE,
-  INTAKERESTING,
-  INTAKETESTING
-};
+  namespace armStates {
+    enum ArmStates {
+      Resting,
+      StoreFirstRing,
+      StoreSecondRing,
+      WallStake,
+      AllianceStake,
+      TipMogo
+    };
+  }
+}
