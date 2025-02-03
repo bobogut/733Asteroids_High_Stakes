@@ -1,5 +1,18 @@
 For tracking changes and going into greater detail after December 10, 2024.
 
+Jan 31, 2025
+- Created my own PID class to have an easier time tracking early exit range
+- Updated the project to Pros 4.1.1 and LemLib 0.5.5
+
+Jan 30, 2025
+- Started tuning arm PID and finding arm positions
+
+Jan 28, 2025
+- Created a namespace for states for clarity
+- Laid the groundwork for the ladybrown code (arm states, arm function, etc.)
+- Placed coordiante classes into their own namespace, mainly to differenetiate my pose from lemlib::Pose
+- Made reflecting coordinates for autonomous a class function
+
 Jan 21, 2025
 - Moved some function defintions from robot funcitons to opcontrol, may move them back if I figure better categorization later
 - Disabled color sorter for Jan 19, 2025 competition as we did not have the optical sensor then
@@ -13,8 +26,7 @@ Jan 6, 2025
 
 Dec 31, 2024
 - Created a global variable namespace so things are clearing in the code
-- Messing around with functions for autonomous routines so that the path can be mirrored easily and without
-too much human interaction (me when I forget a minus sign)
+- Messing around with functions for autonomous routines so that the path can be mirrored easily and without too much human interaction (me when I forget a minus sign)
 
 Dec 31, 2024 (technically Dec 21, just forgot to commit, tournament changes):
 - Fixed autonomous paths
