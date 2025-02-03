@@ -3,6 +3,7 @@
 
 #include "lemlib/chassis/trackingWheel.hpp"
 #include "pros/abstract_motor.hpp"
+#include "pros/motor_group.hpp"
 #include "pros/optical.hpp"
 
 
@@ -77,8 +78,11 @@ lemlib::Chassis base (
 
 
 
-pros::MotorGroup intake({-10, 5}, pros::v5::MotorGears::blue, pros::v5::MotorEncoderUnits::rotations);
+pros::Motor intake(5, pros::v5::MotorGears::blue, pros::v5::MotorEncoderUnits::rotations);
 
+
+
+pros::MotorGroup arm({-10, 1}, pros::v5::MotorGears::green, pros::v5::MotorEncoderUnits::degrees); // Right motor reversed 
 
 
 pros::Optical optical(1); // Optical sensor for ring sorter
@@ -87,3 +91,4 @@ pros::Optical optical(1); // Optical sensor for ring sorter
 
 pros::adi::Pneumatics mogoClamp('a', false); // Technically starts extended due to wiring
 pros::adi::Pneumatics doinker('b', false);
+pros::adi::Pneumatics intakePiston('c', true);
