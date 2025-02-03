@@ -150,24 +150,24 @@ void updateStates() {
 
 
     // Adds the checked state to the button matching the autonomous selected
-    if (global::autonSelected == Skills)
+    if (global::autonSelected == states::autonStates::Skills)
         lv_obj_add_state(skillsBtn, LV_STATE_CHECKED);
-    else if (global::autonSelected == RedPositiveCorner)
+    else if (global::autonSelected == states::autonStates::RedPositiveCorner)
         lv_obj_add_state(redPositiveCornerBtn, LV_STATE_CHECKED);
-    else if (global::autonSelected == RedNegativeCorner)
+    else if (global::autonSelected == states::autonStates::RedNegativeCorner)
         lv_obj_add_state(redNegativeCornerBtn, LV_STATE_CHECKED);
-    else if (global::autonSelected == RedSoloAWP)
+    else if (global::autonSelected == states::autonStates::RedSoloAWP)
         lv_obj_add_state(redSoloAWPBtn, LV_STATE_CHECKED);
-    else if (global::autonSelected == BluePositiveCorner)
+    else if (global::autonSelected == states::autonStates::BluePositiveCorner)
         lv_obj_add_state(bluePositiveCornerBtn, LV_STATE_CHECKED);
-    else if (global::autonSelected == BlueNegativeCorner)
+    else if (global::autonSelected == states::autonStates::BlueNegativeCorner)
         lv_obj_add_state(blueNegativeCornerBtn, LV_STATE_CHECKED);
-    else if (global::autonSelected == BlueSoloAWP)
+    else if (global::autonSelected == states::autonStates::BlueSoloAWP)
         lv_obj_add_state(blueSoloAWPBtn, LV_STATE_CHECKED);
 
-    if (global::autonSelected == RedPositiveCorner || global::autonSelected == RedNegativeCorner || global::autonSelected == RedSoloAWP)
+    if (global::autonSelected == states::autonStates::RedPositiveCorner || global::autonSelected == states::autonStates::RedNegativeCorner || global::autonSelected == states::autonStates::RedSoloAWP)
         lv_obj_add_state(redSide, LV_STATE_CHECKED);
-    else if (global::autonSelected == BluePositiveCorner || global::autonSelected == BlueNegativeCorner || global::autonSelected == BlueSoloAWP)
+    else if (global::autonSelected == states::autonStates::BluePositiveCorner || global::autonSelected == states::autonStates::BlueNegativeCorner || global::autonSelected == states::autonStates::BlueSoloAWP)
         lv_obj_add_state(blueSide, LV_STATE_CHECKED);
 }
 
@@ -177,10 +177,10 @@ void buttonPress(lv_event_t *btnPressed) {
 
     // Home screen buttons
     if (btn == skillsBtn) {
-        if (global::autonSelected != Skills) // Serves as a toggle, in this case for selecting skills
-            global::autonSelected = Skills;
+        if (global::autonSelected != states::autonStates::Skills) // Serves as a toggle, in this case for selecting skills
+            global::autonSelected = states::autonStates::Skills;
         else
-            global::autonSelected = None;
+            global::autonSelected = states::autonStates::None;
     } else if (btn == redSide)
         lv_scr_load(redScreen); // Loads the associated screen, in this case for red autonomous
     else if (btn == blueSide)
@@ -190,41 +190,41 @@ void buttonPress(lv_event_t *btnPressed) {
 
     // Red side buttons
     else if (btn == redPositiveCornerBtn) {
-        if (global::autonSelected != RedPositiveCorner)
-            global::autonSelected = RedPositiveCorner;
+        if (global::autonSelected != states::autonStates::RedPositiveCorner)
+            global::autonSelected = states::autonStates::RedPositiveCorner;
         else
-            global::autonSelected = None;
+            global::autonSelected = states::autonStates::None;
     } else if (btn == redNegativeCornerBtn) {
-        if (global::autonSelected != RedNegativeCorner)
-            global::autonSelected = RedNegativeCorner;
+        if (global::autonSelected != states::autonStates::RedNegativeCorner)
+            global::autonSelected = states::autonStates::RedNegativeCorner;
         else
-            global::autonSelected = None;
+            global::autonSelected = states::autonStates::None;
     }
     else if (btn == redSoloAWPBtn) {
-        if (global::autonSelected != RedSoloAWP)
-            global::autonSelected = RedSoloAWP;
+        if (global::autonSelected != states::autonStates::RedSoloAWP)
+            global::autonSelected = states::autonStates::RedSoloAWP;
         else
-            global::autonSelected = None;
+            global::autonSelected = states::autonStates::None;
     }
 
 
 
     // Blue side buttons
     else if (btn == bluePositiveCornerBtn) {
-        if (global::autonSelected != BluePositiveCorner)
-            global::autonSelected = BluePositiveCorner;
+        if (global::autonSelected != states::autonStates::BluePositiveCorner)
+            global::autonSelected = states::autonStates::BluePositiveCorner;
         else
-            global::autonSelected = None;
+            global::autonSelected = states::autonStates::None;
     } else if (btn == blueNegativeCornerBtn) {
-        if (global::autonSelected != BlueNegativeCorner)
-            global::autonSelected = BlueNegativeCorner;
+        if (global::autonSelected != states::autonStates::BlueNegativeCorner)
+            global::autonSelected = states::autonStates::BlueNegativeCorner;
         else
-            global::autonSelected = None;
+            global::autonSelected = states::autonStates::None;
     } else if (btn == blueSoloAWPBtn) {
-        if (global::autonSelected != BlueSoloAWP)
-            global::autonSelected = BlueSoloAWP;
+        if (global::autonSelected != states::autonStates::BlueSoloAWP)
+            global::autonSelected = states::autonStates::BlueSoloAWP;
         else
-            global::autonSelected = None;
+            global::autonSelected = states::autonStates::None;
     }
 
 
