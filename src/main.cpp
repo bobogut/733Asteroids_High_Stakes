@@ -24,11 +24,11 @@ void initialize() {
 
 
 
-	global::autonSelected = None;
+	global::autonSelected = states::autonStates::None;
 
 
 	// Default intake states
-	global::intakeState = INTAKERESTING;
+	global::intakeState = states::intakeStates::Resting;
 	global::overrideIntakeState = false;
 	
 
@@ -38,6 +38,10 @@ void initialize() {
 	// intakeHook.tare_position();
 
 	intake.tare_position();
+
+	arm.tare_position_all();
+
+	arm.set_brake_mode_all(pros::v5::MotorBrake::brake);
 
 	std::cout << intake.get_position_all()[0] << intake.get_position_all()[1] << std::endl;
 
@@ -50,6 +54,7 @@ void initialize() {
 	pros::task_t updateIntakeSpeed = pros::Task::create(handleIntake, "Update intake speed"); // Create a task for moving the intake so that the rest of the code will not 
 																											  // potentially be interrupted
 
+	pros::task_t updateArmPosition = pros::Task::create(handleArm, "Update intake speed"); // Create a task for moving the intake so that the rest of the code will not 
 
 
 	// Same logic as before but for the base motors and tracking wheels

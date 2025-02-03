@@ -4,16 +4,20 @@
 #include <cmath>
 #include <fstream>
 
+#include "MyPID.h"
+
 #include "lemlib/chassis/chassis.hpp"
 
 #include "global_var.h"
-#include "ports.h"
+#include "lemlib/pid.hpp"
 #include "pros/misc.h"
 #include "pros/rtos.hpp"
+
 #include "states.h"
+#include "ports.h"
 
 
-/*
+
 // Top hook positions: 1st = 2.0 / 6.0, 2nd = 17.0 / 6.0, 3rd = 33.0 / 6.0
 // Neural hook position: 1st = 0.0, 2nd = 15.0 / 6.0, 3rd = 31.0 / 6.0
 // The hooks should be at the same positions every 46.0 / 6.0 rotations or 7.6666... rotations (Numbers are based on chains over knobs on a sprocket)
@@ -108,17 +112,17 @@ void moveIntakeToDesiredPosition(DesiredHookPositions desiredHookPosition, doubl
 
 
 bool checkForColor(bool opposite) {
-    if (((global::autonSelected == RedPositiveCorner || global::autonSelected == RedNegativeCorner || global::autonSelected == Skills) && !opposite) || 
-        ((global::autonSelected == BluePositiveCorner || global::autonSelected == BlueNegativeCorner) && opposite))
+    if (((global::autonSelected == states::autonStates::RedPositiveCorner || global::autonSelected == states::autonStates::RedNegativeCorner || global::autonSelected == states::autonStates::Skills) && !opposite) || 
+        ((global::autonSelected == states::autonStates::BluePositiveCorner || global::autonSelected == states::autonStates::BlueNegativeCorner) && opposite))
             return optical.get_hue() < 18; // Check for red rings which have an approximate hue range of 15-18
-    else if (((global::autonSelected == RedPositiveCorner || global::autonSelected == RedNegativeCorner || global::autonSelected == Skills) && opposite) || 
-             ((global::autonSelected == BluePositiveCorner || global::autonSelected == BlueNegativeCorner) && !opposite))
+    else if (((global::autonSelected == states::autonStates::RedPositiveCorner || global::autonSelected == states::autonStates::RedNegativeCorner || global::autonSelected == states::autonStates::Skills) && opposite) || 
+             ((global::autonSelected == states::autonStates::BluePositiveCorner || global::autonSelected == states::autonStates::BlueNegativeCorner) && !opposite))
             return optical.get_hue() > 167; // Check for blue rings which have an approximate hue range of 167-
 
     return false;
 }
 
-*/
+
 
 void handleIntake() {
     /*
@@ -132,6 +136,9 @@ void handleIntake() {
     int modifier = 600;
 
     double intakePosition = 0;
+
+    bool timerRunning = false;
+    int32_t jamStartTime = 0;
 
     while (true)
     {
@@ -149,7 +156,7 @@ void handleIntake() {
         std::cout << "Color is " << optical.get_hue() << ", time is " << pros::millis() << std::endl; // For figuring out color
         */
 
-        // std::cout << ((global::autonSelected == RedPositiveCorner || global::autonSelected == RedNegativeCorner || global::autonSelected == Skills) && !flipColorSort) << std::endl;
+        // std::cout << ((global::autonSelected == states::autonStates::RedPositiveCorner || global::autonSelected == states::autonStates::RedNegativeCorner || global::autonSelected == states::autonStates::Skills) && !flipColorSort) << std::endl;
         /*
         // If the driver has not overriden the color sort, look for opposing rings to throw off at the top.
         if (checkForColor(!global::flipColorSort) && !global::overrideColorSort) {
@@ -200,21 +207,35 @@ void handleIntake() {
 
         */
 
-        if (global::intakeState == IntakeMogo) { // Sets the intake to 600 rpm, running directly to the mogo
+        // std::cout << "Torque " << intake.get_torque() << std::endl;
+
+        if (intake.get_torque() > 0.34 && !timerRunning) {
+            timerRunning = true;
+            jamStartTime = pros::millis();
+        } else if (intake.get_torque() < 0.34 && timerRunning)
+            timerRunning = false;
+
+        if (timerRunning && pros::millis() - jamStartTime > 1000) {
+            // std::cout << "Too hard stopping now" << std::endl;
+
+            intake.move_velocity(-600);
+            pros::delay(250);
+            intake.move_velocity(intakeSpeed);
+            timerRunning = false;
+        }
+
+        if (global::intakeState == states::intakeStates::Mogo) { // Sets the intake to 600 rpm, running directly to the mogo
             intakeSpeed = 600;
             // std::cout << intakeSpeed << std::endl;
-            std::cout << "Actual velocity is " << intake.get_actual_velocity_all()[0] << " target velocity is " << intake.get_target_velocity_all()[0] << std::endl;
+            // std::cout << "Actual velocity is " << intake.get_actual_velocity_all()[0] << " target velocity is " << intake.get_target_velocity_all()[0] << std::endl;
         }
-        else if (global::intakeState == INTAKERESTING) { // Stops the intake
+        else if (global::intakeState == states::intakeStates::Resting) { // Stops the intake
             intakeSpeed = 0;
             // std::cout << intakeSpeed << std::endl;
         }
-        else if (global::intakeState == INTAKEREVERSE) // Reverses the intake at 600 rpm
+        else if (global::intakeState == states::intakeStates::Reverse) // Reverses the intake at 600 rpm
             intakeSpeed = -600;
         
-
-        // intakePre.move_velocity(intakeSpeed);                   // Runs the first stage intake at whatever rpm was set
-        // intakeHook.move_velocity(intakeSpeed * modifier / 600); // Runs the second stage intake at a slightly slower speed to ensure rings are placed on the mogo properly
 
         intake.move_velocity(intakeSpeed);
 
@@ -232,6 +253,122 @@ void handleIntake() {
     }
 }
 
+
+
+
+void handleArm() {
+    int32_t settleTime;
+    bool inMotion = false;
+
+    float targetArmPosition = 0;
+    float currentArmPosition = 0;
+
+    float armVelocity = 0;
+
+    float error = 0; // slew is 30
+
+    int counter = 0;
+
+    float moreError = 0;
+
+    // lemlib::PID pid(0.825, 0, 0.475);
+
+    MyPID myPID(0.65, 0.0, 0.6, 0.0, {5.0, 10.0});
+    
+    while (true) {        
+        /*
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
+        }
+
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
+        }
+        */
+
+        if (global::armState == states::armStates::Resting)
+            targetArmPosition = 0;
+        else if (global::armState == states::armStates::StoreFirstRing)
+            targetArmPosition = 100;
+        else if (global::armState == states::armStates::StoreSecondRing)
+            targetArmPosition = 0;
+        else if (global::armState == states::armStates::WallStake)
+            targetArmPosition = 350;
+        else if (global::armState == states::armStates::AllianceStake)
+            targetArmPosition = 450;
+        else if (global::armState == states::armStates::TipMogo)
+            targetArmPosition = 180; // 500
+
+        currentArmPosition = (arm.get_position_all()[0] + arm.get_position_all()[1]) / 2 - 10;
+
+        error = targetArmPosition - currentArmPosition;
+
+        /*
+        if (currentArmPosition != targetArmPosition)
+            std::cout << "currentArm position is " << currentArmPosition << " target arm position " << targetArmPosition << std::endl;
+        */
+        // std::cout << error << std::endl;
+
+
+        // if (error != 0)
+            // std::cout << "error is " << error << " arm speed " << pid.update(error) << " my pid speed is " << myPID.update(error)<< std::endl;
+
+        inMotion = !myPID.earlyExit();
+
+        // std::cout << inMotion << std::endl;
+
+
+        myPID.update(error);
+
+        // if (!inMotion)
+            // std::cout << "Early exit" << std::endl;
+
+        if (inMotion) {
+            armVelocity = myPID.getVelocity();
+
+            arm.move_velocity(armVelocity);
+
+            if (abs(error) < 5) {
+                counter += 5;
+                // std::cout << "Within exit range " << counter << std::endl;
+            }
+
+            moreError += abs(error);
+
+            std::cout << "Average error is " << moreError / counter << std::endl;
+        } else {
+            // std::cout << "arm position before stop " << (arm.get_position_all()[0] + arm.get_position_all()[1]) / 2 << std::endl;
+            arm.brake();
+            // std::cout << "arm position after stop " << (arm.get_position_all()[0] + arm.get_position_all()[1]) / 2 << std::endl;
+
+            // counter = 0;
+            // moreError = 0;
+        }
+
+
+        /*
+        if (fabs(error) < 4.0 && !waiting) {
+            settleTime = pros::millis();
+
+
+            waiting = true;
+        } else if (fabs(error) > 4.0)
+            waiting = false;
+
+
+        if (waiting && pros::millis() - settleTime >= 250) {
+            arm.move_velocity(0);
+            targetArmPosition = currentArmPosition;
+            waiting = false;
+
+            std::cout << "Notice me man" << std::endl;
+        }
+        */
+
+        // if (global::armState == 0)
+            // arm.move_velocity(0);
+
+        pros::delay(100);
+    }
+}
 
 
 void handleBase(bool reverse) {
