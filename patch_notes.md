@@ -1,5 +1,9 @@
 For tracking changes and going into greater detail after December 10, 2024.
 
+Feb 2, 2025
+- Created a parent class for all the coordiante info as they are all look to do the same thing
+- Removed the need for the coordinateInfo namespace by making the child classes have distinct names from their LemLib counterparts 
+
 Jan 31, 2025
 - Created my own PID class to have an easier time tracking early exit range
 - Updated the project to Pros 4.1.1 and LemLib 0.5.5
