@@ -27,10 +27,10 @@ void positiveCornerRoutine(bool blueSide) {
     // All coordiantes are by default meant for the red side
     int32_t startTime = pros::millis();
 
-    coordinateInfo::Pose startingPosition(-51.3, -24, 270);
-    coordinateInfo::Pose safeMogo(-30, -24, 270);
-    coordinateInfo::Point secondRing(-24, -48);
-    coordinateInfo::Point ladder(-24, -9.3);
+    MyPose startingPosition(-51.3, -24, 270);
+    MyPose safeMogo(-30, -24, 270);
+    MyPoint secondRing(-24, -48);
+    MyPoint ladder(-24, -9.3);
 
     if (blueSide) {
         startingPosition.reflect();
@@ -108,9 +108,9 @@ void goalRushRoutine(bool blueSide) {
     // All coordiantes are by default meant for the red side
     int32_t startTime = pros::millis();
 
-    coordinateInfo::Pose startingPosition(-51.6, -36.2, 90);
-    coordinateInfo::Point prepTurn(-18.8, -36.2);
-    coordinateInfo::Point grabGoal(-14.9, -41.1);
+    MyPose startingPosition(-51.6, -36.2, 90);
+    MyPoint prepTurn(-18.8, -36.2);
+    MyPoint grabGoal(-14.9, -41.1);
 
     if (blueSide) {
         startingPosition.reflect();
@@ -150,10 +150,10 @@ void safeNegativeCornerRoutine(bool blueSide) {
 
     int32_t startTime = pros::millis();
 
-    coordinateInfo::Pose startingPosition(-51.3, 24, 270);
-    coordinateInfo::Pose negMogo(-30, 24, 270);
-    coordinateInfo::Point secondRing(-24, 48);
-    coordinateInfo::Pose ladder(-24, 9.3, 180);
+    MyPose startingPosition(-51.3, 24, 270);
+    MyPose negMogo(-30, 24, 270);
+    MyPoint secondRing(-24, 48);
+    MyPose ladder(-24, 9.3, 180);
 
     if (blueSide) {
         startingPosition.reflect();
@@ -206,19 +206,19 @@ void ringRushRoutine(bool blueSide) {
     // All coordiantes are by default meant for the red side
     int32_t startTime = pros::millis();
 
-    coordinateInfo::Pose startingPosition(-51.6, 36.2, 90);
-    coordinateInfo::Point prepTurn(-11.0, 36.2);
-    coordinateInfo::Point grabGoal(-14.9, 41.1);
-    coordinateInfo::SwingTheta wall(0, lemlib::DriveSide::LEFT);
+    MyPose startingPosition(-51.6, 36.2, 90);
+    MyPoint prepTurn(-11.0, 36.2);
+    MyPoint grabGoal(-14.9, 41.1);
+    MySwingTheta wall(0, lemlib::DriveSide::LEFT);
     float secondRingY = 45;
-    coordinateInfo::SwingTheta mogoHeading(10, lemlib::DriveSide::RIGHT);
-    coordinateInfo::Pose mogoPose(-18, 30, 10);
-    coordinateInfo::Point thirdRing(-24, 40);
-    coordinateInfo::SwingPoint corner(-61, 62, lemlib::DriveSide::LEFT);
-    coordinateInfo::Point reposition(-54, 57.8);
-    coordinateInfo::Point sixthRing(-48.9, 8.7);
-    coordinateInfo::SwingPoint allianceStakeHeading(-72.0, 0.0, lemlib::DriveSide::RIGHT);
-    coordinateInfo::Point allianceStake(-58.0, 0.0);
+    MySwingTheta mogoHeading(10, lemlib::DriveSide::RIGHT);
+    MyPose mogoPose(-18, 30, 10);
+    MyPoint thirdRing(-24, 40);
+    MySwingPoint corner(-61, 62, lemlib::DriveSide::LEFT);
+    MyPoint reposition(-54, 57.8);
+    MyPoint sixthRing(-48.9, 8.7);
+    MySwingPoint allianceStakeHeading(-72.0, 0.0, lemlib::DriveSide::RIGHT);
+    MyPoint allianceStake(-58.0, 0.0);
 
     if (blueSide) {
         startingPosition.reflect();
@@ -315,15 +315,15 @@ void ringRushRoutine(bool blueSide) {
 void soloAutonomousRoutine(bool blueSide) {
     int32_t startTime = pros::millis();
 
-    coordinateInfo::Pose startingPosition(-51.3, -24, 270);
-    coordinateInfo::Pose posMogo(-30, -24, 270);
-    coordinateInfo::Point secondRing(-24, -48);
-    coordinateInfo::Pose repositionForNeg1(-40.4, 23.0, 167);
-    coordinateInfo::Point repositionForNeg2(-38.9, 13.9);
-    coordinateInfo::Point negMogoHeading(-24, 24);
-    coordinateInfo::Pose negMogo(-31.8, 18.3, 236);
-    coordinateInfo::Point thirdRing(-24, 48);
-    coordinateInfo::Pose ladder(-24, 9.3, 180);
+    MyPose startingPosition(-51.3, -24, 270);
+    MyPose posMogo(-30, -24, 270);
+    MyPoint secondRing(-24, -48);
+    MyPose repositionForNeg1(-40.4, 23.0, 167);
+    MyPoint repositionForNeg2(-38.9, 13.9);
+    MyPoint negMogoHeading(-24, 24);
+    MyPose negMogo(-31.8, 18.3, 236);
+    MyPoint thirdRing(-24, 48);
+    MyPose ladder(-24, 9.3, 180);
 
     if (blueSide) {
         startingPosition.reflect();
