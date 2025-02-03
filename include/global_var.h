@@ -2,12 +2,13 @@
 
 // Relevant PROS library are used for declaring the controller. States header file simply defines enumators
 #include "pros/misc.hpp"
+#include "lemlib/pid.hpp"
 #include "states.h"
 
 
 
 namespace global {
-    inline Autons autonSelected;
+    inline states::autonStates::Autons autonSelected;
     inline bool initializedBrainCoords;
 
     inline bool runningAuton;
@@ -20,7 +21,9 @@ namespace global {
     inline bool storeRing = false;
     inline bool overrideIntakeState = false;
 
-    inline enum IntakeStates intakeState = INTAKERESTING;
+    inline enum states::intakeStates::IntakeStates intakeState = states::intakeStates::Resting;
+
+    inline enum states::armStates::ArmStates armState = states::armStates::Resting;
 }
 
 inline pros::Controller controller(pros::E_CONTROLLER_MASTER);
