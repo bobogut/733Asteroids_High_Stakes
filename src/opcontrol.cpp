@@ -1,5 +1,9 @@
 // Relevant PROS library are used for controller inputs, pneumatic control, and checking motor temperature (embeded in main.h). Other relevant header files are included for functions
 // important to driver control.
+#include <iostream>
+#include <ostream>
+#include <string>
+
 #include "global_var.h"
 #include "main.h"
 
@@ -9,10 +13,26 @@
 #include "states.h"
 #include "brain_screen.h"
 
-#include "lemlib/api.hpp"
-#include <iostream>
-#include <ostream>
-#include <string>
+
+
+/*
+9/12
+
+11/12 needed
+New buttons: 
+
+a (doinker),
+l1 (intake toggle),
+r1 (mogo),
+y (reverse drive),
+up (outtake),
+r2 (wall stake),
+l2 (store ring in lb),
+down (tip),
+b (alliance stake),
+? (color sort override),
+? (down position)
+*/
 
 
 void updateIntakeStates() {
@@ -20,16 +40,16 @@ void updateIntakeStates() {
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) // When the L1 button is pressed
     {
         // Toggle the intake to the mogo or resting state with the same button
-        if (global::intakeState == INTAKERESTING || global::intakeState == INTAKEREVERSE)
-           global::intakeState = IntakeMogo;
+        if (global::intakeState == states::intakeStates::Resting || global::intakeState == states::intakeStates::Reverse)
+           global::intakeState = states::intakeStates::Mogo;
         else
-           global::intakeState = INTAKERESTING;
+           global::intakeState = states::intakeStates::Resting;
 
         std::cout << global::intakeState << std::endl;
     } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) // When the R2 button is pressed set the intake to the reverse state
-       global::intakeState = INTAKEREVERSE;                                       
-    else if (global::intakeState != IntakeMogo) // If the last state was reverse and the R2 button was let go, set the intake to its resting state
-       global::intakeState = INTAKERESTING;
+       global::intakeState = states::intakeStates::Reverse;                                       
+    else if (global::intakeState != states::intakeStates::Mogo) // If the last state was reverse and the R2 button was let go, set the intake to its resting state
+       global::intakeState = states::intakeStates::Resting;
 
 
 
@@ -73,23 +93,26 @@ void opcontrol() {
 
 
 
-    global::intakeState = INTAKERESTING;
+    global::intakeState = states::intakeStates::Resting;
 
 
 
-    // setBrainImage();
+    setBrainImage();
 
+    /*
     if (!global::initializedBrainCoords) {
         
 
         global::initializedBrainCoords = true;
     }
+    */
 
     bool reverse = false; // Whether or not the controllers for the chassis should be reversed;
     
 
 
     while (true) {
+        /*
         // optical.set_led_pwm(100); // Turns on the LED in the optical sensor to ensure that lighting on the ring is consistent
 
 
@@ -98,7 +121,7 @@ void opcontrol() {
         
 
 
-        handlePneumatics();
+        // handlePneumatics();
 
         std::string clampOpen;
 
@@ -114,9 +137,46 @@ void opcontrol() {
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) // When R2 is pressed toggle the reverse state
             reverse = !reverse;
 
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
+            global::armState = states::armStates::TipMogo;
+            // std::cout << "Here notice me " << global::armState << std::endl;
+        }
+
+
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
+            global::armState = states::armStates::Resting;
+            std::cout << "notice me" << std::endl;
+        }
+
+        
+
         handleBase(reverse);
+        */
 
-
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
+            std::cout << "UP" << std::endl;
+        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN))
+            std::cout << "DOWN" << std::endl;
+        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT))
+            std::cout << "LEFT" << std::endl;
+        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT))
+            std::cout << "RIGHT" << std::endl;
+        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
+            std::cout << "A" << std::endl;
+        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))
+            std::cout << "B" << std::endl;
+        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y))
+            std::cout << "Y" << std::endl;
+        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X))
+            std::cout << "X" << std::endl;
+        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
+            std::cout << "L1" << std::endl;
+        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
+            std::cout << "L2" << std::endl;
+        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
+            std::cout << "R1" << std::endl;
+        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
+            std::cout << "R2" << std::endl;
 
         pros::delay(5); // A delay for systems to not get overwhelmed and run properly
     }
