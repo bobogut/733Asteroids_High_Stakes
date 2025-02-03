@@ -1,12 +1,11 @@
 #include "global_var.h"
 #include "main.h"
 
-#include "lemlib/chassis/chassis.hpp"
-#include "lemlib/pose.hpp"
-
 #include "ports.h"
 #include "states.h"
 #include "brain_screen.h"
+
+#include "CoordinateInfo.h"
 
 
 
@@ -20,69 +19,7 @@ void closeClamp(bool close) {
 
 
 
-float reflectAngle(float originalAngle) {
-    return 360 - originalAngle;
-}
 
-float reflectX(float originalX) {
-    return -originalX;
-}
-
-lemlib::DriveSide reflectDriveSide(lemlib::DriveSide lockedSide) {
-    if (lockedSide == lemlib::DriveSide::LEFT)
-        return lemlib::DriveSide::RIGHT;
-    else
-        return  lemlib::DriveSide::LEFT;
-}
-
-
-
-namespace coordinateInfo {
-    class Point {
-        public:
-            float x;
-            float y;
-
-            void reflect() {
-                x = reflectX(x);
-            }
-    };
-
-    class Pose {
-        public:
-            float x;
-            float y;
-            float theta;
-        
-            void reflect() {
-                x = reflectX(x);
-                theta = reflectAngle(theta);
-            }
-    };
-
-    class SwingPoint {
-        public:
-            float x;
-            float y;
-            lemlib::DriveSide lockedSide;
-
-            void reflect() {
-                x = reflectX(x);
-                lockedSide = reflectDriveSide(lockedSide);
-            }
-    };
-
-    class SwingTheta {
-        public:
-            float theta;
-            lemlib::DriveSide lockedSide;
-
-            void reflect() {
-                theta = reflectAngle(theta);
-                lockedSide = reflectDriveSide(lockedSide);
-            }
-    };
-}
 
 
 
@@ -518,7 +455,7 @@ void autonomous() {
     int32_t startTime = pros::millis();
 
 
-
+    
     if (global::autonSelected == states::autonStates::RedPositiveCorner)
         positiveCornerRoutine(false);  
     else if (global::autonSelected == states::autonStates::RedNegativeCorner) {
@@ -1013,7 +950,7 @@ void autonomous() {
         */
     }
 
-    // optical.set_led_pwm(0);
+    optical.set_led_pwm(0);
 
     global::runningAuton = false;
 }
