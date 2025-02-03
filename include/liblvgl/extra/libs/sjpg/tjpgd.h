@@ -63,7 +63,7 @@ struct JDEC {
 	int32_t* qttbl[4];			/* Dequantizer tables [id] */
 #if JD_FASTDECODE >= 1
 	uint32_t wreg;				/* Working shift register */
-	uint8_t marker;				/* Detected marker (0:None) */
+	uint8_t marker;				/* Detected marker (0:states::autonStates::None) */
 #if JD_FASTDECODE == 2
 	uint8_t longofs[2][2];		/* Table offset of long code [id][dcac] */
 	uint16_t* hufflut_ac[2];	/* Fast huffman decode tables for AC short code [id] */
