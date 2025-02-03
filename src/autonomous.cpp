@@ -28,79 +28,60 @@ float reflectX(float originalX) {
     return -originalX;
 }
 
-lemlib::Pose reflectPose(lemlib::Pose originalPose) {
-    lemlib::Pose newPose(NAN, NAN, NAN);
-
-    newPose.x = reflectX(originalPose.x);
-    newPose.y = originalPose.y;
-    newPose.theta = reflectAngle(originalPose.theta);
-
-    return newPose;
-}
-
-
-
-class Point {
-    public:
-        float x;
-        float y;
-
-        // Point(float x, float y);
-};
-
-Point reflectPoint(Point originalPoint) {
-    Point newPoint(NAN, NAN);
-
-    newPoint.x = reflectX(originalPoint.x);
-    newPoint.y = originalPoint.y;
-
-    return newPoint;
-}
-
-class SwingPoint {
-    public:
-        float x;
-        float y;
-        lemlib::DriveSide lockedSide;
-
-        SwingPoint(float x, float y, lemlib::DriveSide lockedSide);
-};
-
-
-
-class SwingTheta {
-    public:
-        float theta;
-        lemlib::DriveSide lockedSide;
-
-        SwingTheta(float theta, lemlib::DriveSide lockedSide);
-};
-
-
-lemlib::DriveSide reflectDriveSide(lemlib::DriveSide originalLockedSide) {
-    if (originalLockedSide == lemlib::DriveSide::LEFT)
+lemlib::DriveSide reflectDriveSide(lemlib::DriveSide lockedSide) {
+    if (lockedSide == lemlib::DriveSide::LEFT)
         return lemlib::DriveSide::RIGHT;
     else
-        return lemlib::DriveSide::LEFT;
+        return  lemlib::DriveSide::LEFT;
 }
 
-SwingTheta reflectSwingTheta(SwingTheta originalSwing) {
-    SwingTheta newSwing(NAN, lemlib::DriveSide::LEFT);
 
-    newSwing.theta = reflectAngle(originalSwing.theta);
-    newSwing.lockedSide = reflectDriveSide(originalSwing.lockedSide);
 
-    return newSwing;
-}
+namespace coordinateInfo {
+    class Point {
+        public:
+            float x;
+            float y;
 
-SwingPoint reflectSwingPoint(SwingPoint originalSwing) {
-    SwingPoint newSwing(NAN, NAN, lemlib::DriveSide::LEFT);
+            void reflect() {
+                x = reflectX(x);
+            }
+    };
 
-    newSwing.x = reflectX(originalSwing.x);
-    newSwing.y = originalSwing.y;
-    newSwing.lockedSide = originalSwing.lockedSide;
+    class Pose {
+        public:
+            float x;
+            float y;
+            float theta;
+        
+            void reflect() {
+                x = reflectX(x);
+                theta = reflectAngle(theta);
+            }
+    };
 
-    return newSwing;
+    class SwingPoint {
+        public:
+            float x;
+            float y;
+            lemlib::DriveSide lockedSide;
+
+            void reflect() {
+                x = reflectX(x);
+                lockedSide = reflectDriveSide(lockedSide);
+            }
+    };
+
+    class SwingTheta {
+        public:
+            float theta;
+            lemlib::DriveSide lockedSide;
+
+            void reflect() {
+                theta = reflectAngle(theta);
+                lockedSide = reflectDriveSide(lockedSide);
+            }
+    };
 }
 
 
@@ -109,16 +90,16 @@ void positiveCornerRoutine(bool blueSide) {
     // All coordiantes are by default meant for the red side
     int32_t startTime = pros::millis();
 
-    lemlib::Pose startingPosition(-51.3, -24, 270);
-    lemlib::Pose safeMogo(-30, -24, 270);
-    Point secondRing(-24, -48);
-    Point ladder(-24, -9.3);
+    coordinateInfo::Pose startingPosition(-51.3, -24, 270);
+    coordinateInfo::Pose safeMogo(-30, -24, 270);
+    coordinateInfo::Point secondRing(-24, -48);
+    coordinateInfo::Point ladder(-24, -9.3);
 
     if (blueSide) {
-        startingPosition = reflectPose(startingPosition);
-        safeMogo = reflectPose(safeMogo);
-        secondRing = reflectPoint(secondRing);
-        ladder = reflectPoint(ladder);
+        startingPosition.reflect();
+        safeMogo.reflect();
+        secondRing.reflect();
+        ladder.reflect();
     }
 
     base.setPose(startingPosition.x, startingPosition.y, startingPosition.theta);
@@ -137,7 +118,7 @@ void positiveCornerRoutine(bool blueSide) {
 
     base.waitUntilDone();
 
-   global::intakeState = IntakeMogo;
+    global::intakeState = states::intakeStates::Mogo;
 
     base.moveToPoint(secondRing.x, secondRing.y, 1500);
 
@@ -150,7 +131,7 @@ void positiveCornerRoutine(bool blueSide) {
 
     base.waitUntilDone();
 
-   global::intakeState = IntakeMogo;
+   global::intakeState = states::intakeStates::Mogo;
 
     base.moveToPoint(-60, -53.8, 3000);
 
@@ -190,16 +171,16 @@ void goalRushRoutine(bool blueSide) {
     // All coordiantes are by default meant for the red side
     int32_t startTime = pros::millis();
 
-    lemlib::Pose startingPosition(-51.6, -36.2, 90);
-    Point prepTurn(-18.8, -36.2);
-    Point grabGoal(-14.9, -41.1);
+    coordinateInfo::Pose startingPosition(-51.6, -36.2, 90);
+    coordinateInfo::Point prepTurn(-18.8, -36.2);
+    coordinateInfo::Point grabGoal(-14.9, -41.1);
 
     if (blueSide) {
-        startingPosition = reflectPose(startingPosition);
-        prepTurn = reflectPoint(prepTurn);
-        grabGoal = reflectPoint(grabGoal);
-        // thirdRing = reflectPoint(thirdRing);
-        // preload = reflectPoint(preload);
+        startingPosition.reflect();
+        prepTurn.reflect();
+        grabGoal.reflect();
+        // thirdRing.reflect();
+        // preload.reflect();
     }
 
     base.setPose(startingPosition.x, startingPosition.y, startingPosition.theta);
@@ -232,16 +213,16 @@ void safeNegativeCornerRoutine(bool blueSide) {
 
     int32_t startTime = pros::millis();
 
-    lemlib::Pose startingPosition(-51.3, 24, 270);
-    lemlib::Pose negMogo(-30, 24, 270);
-    Point secondRing(-24, 48);
-    lemlib::Pose ladder(-24, 9.3, 180);
+    coordinateInfo::Pose startingPosition(-51.3, 24, 270);
+    coordinateInfo::Pose negMogo(-30, 24, 270);
+    coordinateInfo::Point secondRing(-24, 48);
+    coordinateInfo::Pose ladder(-24, 9.3, 180);
 
     if (blueSide) {
-        startingPosition = reflectPose(startingPosition);
-        negMogo = reflectPose(negMogo);
-        secondRing = reflectPoint(secondRing);
-        ladder = reflectPose(ladder);
+        startingPosition.reflect();
+        negMogo.reflect();
+        secondRing.reflect();
+        ladder.reflect();
     }
         
     // throw into initialize
@@ -259,7 +240,7 @@ void safeNegativeCornerRoutine(bool blueSide) {
 
     base.waitUntilDone();
 
-    global::intakeState = IntakeMogo;
+    global::intakeState = states::intakeStates::Mogo;
 
     base.moveToPoint(secondRing.x, secondRing.y, 1500);
 
@@ -277,7 +258,7 @@ void safeNegativeCornerRoutine(bool blueSide) {
 
     // base.waitUntil(16);
     
-    // global::intakeState = INTAKERESTING;
+    // global::intakeState = states::intakeStates::Resting;
 
     base.turnToPoint(ladder.x, ladder.y, 1000);
 
@@ -288,24 +269,35 @@ void ringRushRoutine(bool blueSide) {
     // All coordiantes are by default meant for the red side
     int32_t startTime = pros::millis();
 
-    lemlib::Pose startingPosition(-51.6, 36.2, 270);
-    Point prepTurn(-11.0, 36.2);
-    lemlib::DriveSide faceWall = lemlib::DriveSide::RIGHT;
-    float twoRingsY = 54.4;
-    SwingTheta mogoHeading(5, lemlib::DriveSide::RIGHT);
-    Point mogo(-24, 24);
-    Point ladder(-9.6, -26.2);
-    Point thirdRing(-24, 48);
-    Point preload(-53,36.2);
+    coordinateInfo::Pose startingPosition(-51.6, 36.2, 90);
+    coordinateInfo::Point prepTurn(-11.0, 36.2);
+    coordinateInfo::Point grabGoal(-14.9, 41.1);
+    coordinateInfo::SwingTheta wall(0, lemlib::DriveSide::LEFT);
+    float secondRingY = 45;
+    coordinateInfo::SwingTheta mogoHeading(10, lemlib::DriveSide::RIGHT);
+    coordinateInfo::Pose mogoPose(-18, 30, 10);
+    coordinateInfo::Point thirdRing(-24, 40);
+    coordinateInfo::SwingPoint corner(-61, 62, lemlib::DriveSide::LEFT);
+    coordinateInfo::Point reposition(-54, 57.8);
+    coordinateInfo::Point sixthRing(-48.9, 8.7);
+    coordinateInfo::SwingPoint allianceStakeHeading(-72.0, 0.0, lemlib::DriveSide::RIGHT);
+    coordinateInfo::Point allianceStake(-58.0, 0.0);
 
     if (blueSide) {
-        startingPosition = reflectPose(startingPosition);
-        faceWall = reflectDriveSide(faceWall);
-        mogoHeading = reflectSwingTheta(mogoHeading);
-        mogo = reflectPoint(mogo);
-        ladder = reflectPoint(ladder);
-        thirdRing = reflectPoint(thirdRing);
-        preload = reflectPoint(preload);
+        startingPosition.reflect();
+        prepTurn.reflect();
+        grabGoal.reflect();
+        wall.reflect();
+        secondRingY = -secondRingY;
+        mogoHeading.reflect();
+        // corner.reflect(corner);
+
+        corner.reflect();
+
+        reposition.reflect();
+        sixthRing.reflect();
+        allianceStakeHeading.reflect();
+        allianceStake.reflect();
     }
 
     base.setPose(startingPosition.x, startingPosition.y, startingPosition.theta);
@@ -314,26 +306,15 @@ void ringRushRoutine(bool blueSide) {
 
     base.moveToPoint(prepTurn.x, prepTurn.y, 3000, {.minSpeed = 44.45, .earlyExitRange = 2});
 
-    base.swingToHeading(0, faceWall, 1000);
+    base.swingToHeading(wall.theta, wall.lockedSide, 1000);
 
     base.waitUntilDone();
 
-    std::cout << "Turned at time: " << pros::millis() - startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
-
-    intake.move_absolute(10, 600);
-
-    base.moveToPose(base.getPose().x, twoRingsY, 0, 2000);
+    base.moveToPose(base.getPose().x, secondRingY, 0, 2000);
 
     base.waitUntilDone();
 
     std::cout << "Done storing two rings at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
-
-
-
-
-
-
-
 
     base.swingToHeading(mogoHeading.theta, mogoHeading.lockedSide, 1500, {.minSpeed = 31.75, .earlyExitRange = 3});
 
@@ -341,15 +322,7 @@ void ringRushRoutine(bool blueSide) {
 
     std::cout << "First swing at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
 
-    /*
-    base.swingToPoint(mogo.x, mogo.y, lemlib::DriveSide::RIGHT, 1500, {.forwards = false});
-
-    base.waitUntilDone();
-
-    std::cout << "Second swing at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
-    */
-
-    base.moveToPose(mogo.x, mogo.y, 10, 1000, {.forwards = false});
+    base.moveToPose(mogoPose.x, mogoPose.y, mogoPose.theta, 1000, {.forwards = false});
 
     base.waitUntil(8);
 
@@ -361,22 +334,43 @@ void ringRushRoutine(bool blueSide) {
 
     std::cout << "Got the first mogo at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
 
-
-
-
-
-
     base.turnToPoint(thirdRing.x, thirdRing.y, 1000);
 
     base.waitUntilDone();
 
-    global::intakeState = IntakeMogo;
+    global::intakeState = states::intakeStates::Mogo;
 
     base.moveToPoint(thirdRing.x, thirdRing.y, 1000);
 
-    base.turnToPoint(preload.x, preload.y, 1000);
+    // base.swingToPoint(-66, 64, lemlib::DriveSide::LEFT, 1000);
 
-    base.moveToPoint(preload.x, preload.y, 3000);
+    base.swingToPoint(corner.x, corner.y, corner.lockedSide, 1000);
+
+    base.moveToPoint(corner.x, corner.y, 3000);
+
+    base.waitUntilDone();
+
+    pros::delay(500);
+
+    base.moveToPoint(reposition.x, reposition.y, 1000);
+
+    // base.turnToPoint(-53, 36.2, 1000);
+
+    // base.moveToPoint(-53, 36.2, 3000);
+
+    base.turnToPoint(-48, 0, 1000);
+
+    global::intakeState = states::intakeStates::Mogo;
+
+    base.moveToPoint(sixthRing.x, sixthRing.y, 3000);
+
+    base.waitUntil(40);
+
+    intakePiston.set_value(true);
+
+    base.swingToPoint(allianceStakeHeading.x, allianceStakeHeading.y, allianceStakeHeading.lockedSide, 1000);
+
+    base.moveToPoint(allianceStake.x, allianceStake.y, 1000);
 }
 
 
@@ -384,26 +378,26 @@ void ringRushRoutine(bool blueSide) {
 void soloAutonomousRoutine(bool blueSide) {
     int32_t startTime = pros::millis();
 
-    lemlib::Pose startingPosition(-51.3, -24, 270);
-    lemlib::Pose posMogo(-30, -24, 270);
-    Point secondRing(-24, -48);
-    lemlib::Pose repositionForNeg1(-40.4, 23.0, 167);
-    Point repositionForNeg2(-38.9, 13.9);
-    Point negMogoHeading(-24, 24);
-    lemlib::Pose negMogo(-31.8, 18.3, 236);
-    Point thirdRing(-24, 48);
-    lemlib::Pose ladder(-24, 9.3, 180);
+    coordinateInfo::Pose startingPosition(-51.3, -24, 270);
+    coordinateInfo::Pose posMogo(-30, -24, 270);
+    coordinateInfo::Point secondRing(-24, -48);
+    coordinateInfo::Pose repositionForNeg1(-40.4, 23.0, 167);
+    coordinateInfo::Point repositionForNeg2(-38.9, 13.9);
+    coordinateInfo::Point negMogoHeading(-24, 24);
+    coordinateInfo::Pose negMogo(-31.8, 18.3, 236);
+    coordinateInfo::Point thirdRing(-24, 48);
+    coordinateInfo::Pose ladder(-24, 9.3, 180);
 
     if (blueSide) {
-        startingPosition = reflectPose(startingPosition);
-        posMogo = reflectPose(posMogo);
-        secondRing = reflectPoint(secondRing);
-        repositionForNeg1 = reflectPose(repositionForNeg1);
-        repositionForNeg2 = reflectPoint(repositionForNeg2);
-        negMogoHeading = reflectPoint(negMogoHeading);
-        negMogo = reflectPose(negMogo);
-        thirdRing = reflectPoint(thirdRing);
-        ladder = reflectPose(ladder);
+        startingPosition.reflect();
+        posMogo.reflect();
+        secondRing.reflect();
+        repositionForNeg1.reflect();
+        repositionForNeg2.reflect();
+        negMogoHeading.reflect();
+        negMogo.reflect();
+        thirdRing.reflect();
+        ladder.reflect();
     }
 
     // See SG-1
@@ -423,7 +417,7 @@ void soloAutonomousRoutine(bool blueSide) {
 
     base.waitUntilDone();
 
-    global::intakeState = IntakeMogo;
+    global::intakeState = states::intakeStates::Mogo;
 
     base.moveToPoint(secondRing.x, secondRing.y, 1500);
 
@@ -436,7 +430,7 @@ void soloAutonomousRoutine(bool blueSide) {
 
     base.waitUntilDone();
 
-    global::intakeState = INTAKERESTING;
+    global::intakeState = states::intakeStates::Resting;
 
     base.moveToPoint(repositionForNeg2.x, repositionForNeg2.y, 1000);
 
@@ -468,7 +462,7 @@ void soloAutonomousRoutine(bool blueSide) {
 
     // Grab another ring
 
-    global::intakeState = IntakeMogo;
+    global::intakeState = states::intakeStates::Mogo;
 
     base.turnToPoint(thirdRing.x, thirdRing.y, 1000);
 
@@ -525,20 +519,20 @@ void autonomous() {
 
 
 
-    if (global::autonSelected == RedPositiveCorner)
+    if (global::autonSelected == states::autonStates::RedPositiveCorner)
         positiveCornerRoutine(false);  
-    else if (global::autonSelected == RedNegativeCorner) {
+    else if (global::autonSelected == states::autonStates::RedNegativeCorner) {
         safeNegativeCornerRoutine(false);
-    } else if (global::autonSelected == RedSoloAWP) {
+    } else if (global::autonSelected == states::autonStates::RedSoloAWP) {
         soloAutonomousRoutine(false);
         // base.setPose(0,0,0);
         // base.moveToPoint(0, 12, 1000);
-    } else if (global::autonSelected == BluePositiveCorner) {
+    } else if (global::autonSelected == states::autonStates::BluePositiveCorner) {
         // positiveCornerRoutine(true);  
-        goalRushRouting(true);
-    } else if (global::autonSelected == BlueNegativeCorner) {
+        goalRushRoutine(true);
+    } else if (global::autonSelected == states::autonStates::BlueNegativeCorner) {
         safeNegativeCornerRoutine(true);
-    } else if (global::autonSelected == BlueSoloAWP) {
+    } else if (global::autonSelected == states::autonStates::BlueSoloAWP) {
         // See SG-1
         base.setPose(51.3, -24, 90);
 
@@ -556,7 +550,7 @@ void autonomous() {
 
         base.waitUntilDone();
 
-       global::intakeState = IntakeMogo;
+       global::intakeState = states::intakeStates::Mogo;
 
         base.moveToPoint(24, -48, 1500);
 
@@ -568,7 +562,7 @@ void autonomous() {
 
         base.waitUntilDone();
 
-       global::intakeState = INTAKERESTING;
+       global::intakeState = states::intakeStates::Resting;
 
         global::findNextDown = true;
 
@@ -600,7 +594,7 @@ void autonomous() {
 
         // Grab another ring
 
-       global::intakeState = IntakeMogo;
+       global::intakeState = states::intakeStates::Mogo;
 
         base.turnToPoint(24.0, 48.0, 1000);
 
@@ -613,7 +607,7 @@ void autonomous() {
         base.moveToPose(24, 9.3, 180, 2000, {.minSpeed = 63.5});
 
         std::cout << "Touching the ladder at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
-    } else if (global::autonSelected == Skills) {
+    } else if (global::autonSelected == states::autonStates::Skills) {
         base.setPose(-57.8, -17, 302);
 
         // Get mogo
@@ -633,7 +627,7 @@ void autonomous() {
     
         base.waitUntilDone();
 
-       global::intakeState = IntakeMogo;
+       global::intakeState = states::intakeStates::Mogo;
 
         base.moveToPoint(-31.0, -22.6, 1500, {.minSpeed = 76.2, .earlyExitRange = 3});
 
@@ -678,7 +672,7 @@ void autonomous() {
         
         base.waitUntilDone();
 
-       global::intakeState = INTAKERESTING;
+       global::intakeState = states::intakeStates::Resting;
 
         global::findNextDown = true;
 
@@ -736,7 +730,7 @@ void autonomous() {
 
         // Grab a ring
 
-       global::intakeState = IntakeMogo;
+       global::intakeState = states::intakeStates::Mogo;
 
         base.swingToPoint(-24, 48, lemlib::DriveSide::LEFT, 1000, {.direction = lemlib::AngularDirection::CCW_COUNTERCLOCKWISE, .minSpeed = 76.2, .earlyExitRange = 5});
    
@@ -760,7 +754,7 @@ void autonomous() {
         
         base.waitUntilDone();
 
-       global::intakeState = INTAKERESTING;
+       global::intakeState = states::intakeStates::Resting;
 
         global::findNextDown = true;
 
@@ -822,7 +816,7 @@ void autonomous() {
 
         base.waitUntilDone();
 
-       global::intakeState = IntakeMogo;
+       global::intakeState = states::intakeStates::Mogo;
 
         base.moveToPoint(24, -24, 1500, {.minSpeed = 76.2, .earlyExitRange = 3});
 
@@ -848,7 +842,7 @@ void autonomous() {
 
         pros::delay(500);
 
-       global::intakeState = INTAKERESTING;
+       global::intakeState = states::intakeStates::Resting;
 
         global::findNextDown = true;
 
@@ -902,7 +896,7 @@ void autonomous() {
 
         std::cout << "Done with skills at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
 
-    } else if (global::autonSelected == None) {
+    } else if (global::autonSelected == states::autonStates::None) {
         /*
         base.setPose(0, 0, 0);
 
@@ -960,7 +954,7 @@ void autonomous() {
 
         pros::delay(250);
 
-       global::intakeState = IntakeMogo;
+       global::intakeState = states::intakeStates::Mogo;
 
         base.turnToPoint(24, 48, 1000);
 
