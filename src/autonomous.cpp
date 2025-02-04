@@ -1,4 +1,3 @@
-#include "global_var.h"
 #include "main.h"
 
 #include "ports.h"
@@ -27,8 +26,8 @@ void positiveCornerRoutine(bool blueSide) {
     // All coordiantes are by default meant for the red side
     int32_t startTime = pros::millis();
 
-    MyPose startingPosition(-51.3, -24, 270);
-    MyPose safeMogo(-30, -24, 270);
+    lemlib::Pose startingPosition(-51.3, -24, 270);
+    lemlib::Pose safeMogo(-30, -24, 270);
     MyPoint secondRing(-24, -48);
     MyPoint ladder(-24, -9.3);
 
@@ -108,7 +107,7 @@ void goalRushRoutine(bool blueSide) {
     // All coordiantes are by default meant for the red side
     int32_t startTime = pros::millis();
 
-    MyPose startingPosition(-51.6, -36.2, 90);
+    lemlib::Pose startingPosition(-51.6, -36.2, 90);
     MyPoint prepTurn(-18.8, -36.2);
     MyPoint grabGoal(-14.9, -41.1);
 
@@ -150,10 +149,10 @@ void safeNegativeCornerRoutine(bool blueSide) {
 
     int32_t startTime = pros::millis();
 
-    MyPose startingPosition(-51.3, 24, 270);
-    MyPose negMogo(-30, 24, 270);
+    lemlib::Pose startingPosition(-51.3, 24, 270);
+    lemlib::Pose negMogo(-30, 24, 270);
     MyPoint secondRing(-24, 48);
-    MyPose ladder(-24, 9.3, 180);
+    lemlib::Pose ladder(-24, 9.3, 180);
 
     if (blueSide) {
         startingPosition.reflect();
@@ -206,13 +205,13 @@ void ringRushRoutine(bool blueSide) {
     // All coordiantes are by default meant for the red side
     int32_t startTime = pros::millis();
 
-    MyPose startingPosition(-51.6, 36.2, 90);
+    lemlib::Pose startingPosition(-51.6, 36.2, 90);
     MyPoint prepTurn(-11.0, 36.2);
     MyPoint grabGoal(-14.9, 41.1);
     MySwingTheta wall(0, lemlib::DriveSide::LEFT);
     float secondRingY = 45;
     MySwingTheta mogoHeading(10, lemlib::DriveSide::RIGHT);
-    MyPose mogoPose(-18, 30, 10);
+    lemlib::Pose mogoPose(-18, 30, 10);
     MyPoint thirdRing(-24, 40);
     MySwingPoint corner(-61, 62, lemlib::DriveSide::LEFT);
     MyPoint reposition(-54, 57.8);
@@ -315,15 +314,15 @@ void ringRushRoutine(bool blueSide) {
 void soloAutonomousRoutine(bool blueSide) {
     int32_t startTime = pros::millis();
 
-    MyPose startingPosition(-51.3, -24, 270);
-    MyPose posMogo(-30, -24, 270);
+    lemlib::Pose startingPosition(-51.3, -24, 270);
+    lemlib::Pose posMogo(-30, -24, 270);
     MyPoint secondRing(-24, -48);
-    MyPose repositionForNeg1(-40.4, 23.0, 167);
+    lemlib::Pose repositionForNeg1(-40.4, 23.0, 167);
     MyPoint repositionForNeg2(-38.9, 13.9);
     MyPoint negMogoHeading(-24, 24);
-    MyPose negMogo(-31.8, 18.3, 236);
+    lemlib::Pose negMogo(-31.8, 18.3, 236);
     MyPoint thirdRing(-24, 48);
-    MyPose ladder(-24, 9.3, 180);
+    lemlib::Pose ladder(-24, 9.3, 180);
 
     if (blueSide) {
         startingPosition.reflect();
