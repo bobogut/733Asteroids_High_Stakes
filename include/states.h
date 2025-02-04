@@ -30,8 +30,8 @@ namespace states {
   namespace armStates {
     enum ArmStates {
       Resting,
-      StoreFirstRing,
-      StoreSecondRing,
+      PrimeOne,
+      PrimeTwo,
       WallStake,
       AllianceStake,
       TipMogo
