@@ -9,7 +9,6 @@
 #include "lemlib/chassis/chassis.hpp"
 
 #include "global_var.h"
-#include "lemlib/pid.hpp"
 #include "pros/misc.h"
 #include "pros/rtos.hpp"
 
@@ -259,6 +258,7 @@ void handleIntake() {
 void handleArm() {
     int32_t settleTime;
     bool inMotion = false;
+    bool removedBuffer = true;
 
     float targetArmPosition = 0;
     float currentArmPosition = 0;
@@ -271,33 +271,26 @@ void handleArm() {
 
     float moreError = 0;
 
-    // lemlib::PID pid(0.825, 0, 0.475);
+    std::initializer_list<float> exitRange = {5.0, 10.0};
 
-    MyPID myPID(0.65, 0.0, 0.6, 0.0, {5.0, 10.0});
+
+    MyPID myPID(0.65, 0.0, 0.6, 0.0, &exitRange);
     
     while (true) {        
-        /*
-        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1)) {
-        }
-
-        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
-        }
-        */
-
         if (global::armState == states::armStates::Resting)
             targetArmPosition = 0;
-        else if (global::armState == states::armStates::StoreFirstRing)
+        else if (global::armState == states::armStates::PrimeOne)
             targetArmPosition = 100;
-        else if (global::armState == states::armStates::StoreSecondRing)
-            targetArmPosition = 0;
+        else if (global::armState == states::armStates::PrimeTwo)
+            targetArmPosition = 130;
         else if (global::armState == states::armStates::WallStake)
             targetArmPosition = 350;
         else if (global::armState == states::armStates::AllianceStake)
             targetArmPosition = 450;
         else if (global::armState == states::armStates::TipMogo)
-            targetArmPosition = 180; // 500
+            targetArmPosition = 500; // 500
 
-        currentArmPosition = (arm.get_position_all()[0] + arm.get_position_all()[1]) / 2 - 10;
+        currentArmPosition = (arm.get_position_all()[0] + arm.get_position_all()[1]) / 2 - 30;
 
         error = targetArmPosition - currentArmPosition;
 
@@ -311,60 +304,41 @@ void handleArm() {
         // if (error != 0)
             // std::cout << "error is " << error << " arm speed " << pid.update(error) << " my pid speed is " << myPID.update(error)<< std::endl;
 
-        inMotion = !myPID.earlyExit();
-
-        // std::cout << inMotion << std::endl;
-
-
         myPID.update(error);
 
-        // if (!inMotion)
-            // std::cout << "Early exit" << std::endl;
+
+
+        inMotion = !myPID.earlyExit();
+
+        // std::cout << "Early exit? " << !myPID.earlyExit() << std::endl;
 
         if (inMotion) {
             armVelocity = myPID.getVelocity();
 
             arm.move_velocity(armVelocity);
-
-            if (abs(error) < 5) {
-                counter += 5;
-                // std::cout << "Within exit range " << counter << std::endl;
-            }
-
-            moreError += abs(error);
-
-            std::cout << "Average error is " << moreError / counter << std::endl;
         } else {
             // std::cout << "arm position before stop " << (arm.get_position_all()[0] + arm.get_position_all()[1]) / 2 << std::endl;
             arm.brake();
+
+            // std::cout << "Waiting and not moving" << std::endl;
+
+            if (!removedBuffer) {
+                global::armStatesQueue.erase(global::armStatesQueue.begin());
+                removedBuffer = true;
+            }
             // std::cout << "arm position after stop " << (arm.get_position_all()[0] + arm.get_position_all()[1]) / 2 << std::endl;
 
             // counter = 0;
             // moreError = 0;
+
+            if (global::armStatesQueue.size() != 0) {
+                std::cout << "First in queue is " << global::armStatesQueue.begin()[0] << std::endl;
+                global::armState = global::armStatesQueue.begin()[0];
+                removedBuffer = false;
+            }
         }
 
 
-        /*
-        if (fabs(error) < 4.0 && !waiting) {
-            settleTime = pros::millis();
-
-
-            waiting = true;
-        } else if (fabs(error) > 4.0)
-            waiting = false;
-
-
-        if (waiting && pros::millis() - settleTime >= 250) {
-            arm.move_velocity(0);
-            targetArmPosition = currentArmPosition;
-            waiting = false;
-
-            std::cout << "Notice me man" << std::endl;
-        }
-        */
-
-        // if (global::armState == 0)
-            // arm.move_velocity(0);
 
         pros::delay(100);
     }
