@@ -13,6 +13,19 @@ namespace lemlib {
  * The Pose class overloads operators so you can easily add, subtract, multiply, etc.
  */
 class Pose {
+    private:
+        float reflectAngle(float originalAngle) {
+            return 360 - originalAngle;
+        }
+
+        float reflectX(float originalX) {
+            return -originalX;
+        }
+
+
+
+
+
     public:
         float x;
         float y;
@@ -206,6 +219,13 @@ class Pose {
          * @endcode
          */
         Pose rotate(float angle) const;
+
+
+
+        void reflect() {
+            x = reflectX(x);
+            theta = reflectAngle(theta);
+        }
 };
 
 /**

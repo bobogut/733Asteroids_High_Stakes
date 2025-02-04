@@ -1,6 +1,9 @@
 #pragma once
 
+
+
 #include "lemlib/chassis/chassis.hpp"
+
 
 
 class CoordianteInfo {
@@ -17,7 +20,7 @@ class CoordianteInfo {
             if (lockedSide == lemlib::DriveSide::LEFT)
                 return lemlib::DriveSide::RIGHT;
             else
-                return  lemlib::DriveSide::LEFT;
+                return lemlib::DriveSide::LEFT;
         }
 };
 
