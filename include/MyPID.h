@@ -13,7 +13,7 @@ class MyPID {
 
         const float antiWindup;
 
-        const std::initializer_list<float> exitRange;
+        const std::initializer_list<float> *exitRange;
 
     private:
         float lastError = NAN;
@@ -24,8 +24,8 @@ class MyPID {
         float velocity;
 
     public:
-        MyPID(float kP, float kI, float kD, float antiWindup, std::initializer_list<float> exitRange) : kP(kP), kI(kI), kD(kD), antiWindup(antiWindup), exitRange(exitRange) {
-            std::cout << "Exit range is " << exitRange.size() << ", " << exitRange.begin()[0] << std::endl;
+        MyPID(float kP, float kI, float kD, float antiWindup, std::initializer_list<float> *exitRange) : kP(kP), kI(kI), kD(kD), antiWindup(antiWindup), exitRange(exitRange) {
+            std::cout << " range is " << exitRange->begin()[0] << std::endl;
         };
 
         void update(float error) {
@@ -33,11 +33,13 @@ class MyPID {
             if (lastError != lastError)
                 lastError = error;
 
-            // std::cout << "error is " << abs(error) << " range is " << exitRange.begin()[0] << std::endl;
+            // std::cout << "error is " << abs(error) << " range is " << exitRange->begin()[0] << " time is " << exitRange->begin()[1] << std::endl;
 
-            if (abs(error) < exitRange.begin()[0]) {
+
+
+            if (abs(error) < exitRange->begin()[0]) {
                 trackingTime += 5;
-                // std::cout << "Within range time " << trackingTime << std::endl;
+                // std::cout << "Within range, tracking time at " << trackingTime << std::endl;
             } else
                 trackingTime = 0;
 
@@ -66,6 +68,6 @@ class MyPID {
         }
 
         bool earlyExit() {
-            return trackingTime > exitRange.begin()[1];
+            return trackingTime > exitRange->begin()[1];
         }
 };
