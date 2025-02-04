@@ -1,8 +1,8 @@
 #pragma once
 
 // Relevant PROS library are used for declaring the controller. States header file simply defines enumators
+#include <vector>
 #include "pros/misc.hpp"
-#include "lemlib/pid.hpp"
 #include "states.h"
 
 
@@ -24,6 +24,7 @@ namespace global {
     inline enum states::intakeStates::IntakeStates intakeState = states::intakeStates::Resting;
 
     inline enum states::armStates::ArmStates armState = states::armStates::Resting;
+    inline std::vector<states::armStates::ArmStates> armStatesQueue;
 }
 
 inline pros::Controller controller(pros::E_CONTROLLER_MASTER);
