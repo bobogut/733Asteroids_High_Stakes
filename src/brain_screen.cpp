@@ -1,8 +1,7 @@
 #include "pros/rtos.hpp"
 #include "pros/llemu.hpp"
 
-
-#include "ports.h"
+#include "my_includes/ports.h"
 
 
 
@@ -20,16 +19,18 @@ void setBrainImage() {
 }
 
 void robotCoordinates() {
-    pros::lcd::initialize(); // initialize brain screen
+    pros::lcd::initialize(); // Initialize brain screen
 
     pros::Task screen_task([&]() {
         while (true) {
-            // print robot location to the brain screen
+            // Print robot location to the brain screen
             pros::lcd::print(0, "X: %f", base.getPose().x);
             pros::lcd::print(1, "Y: %f", base.getPose().y);
             pros::lcd::print(2, "Theta: %f", base.getPose().theta);
-            // delay to save resources
-            pros::delay(20);
+            
+            
+            
+            pros::delay(5); // Delay to save resources
         }
     });
 }

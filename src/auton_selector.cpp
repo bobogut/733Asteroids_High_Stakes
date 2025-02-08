@@ -1,3 +1,5 @@
+#include <cstddef>
+
 #include "liblvgl/core/lv_disp.h"
 #include "liblvgl/font/lv_symbol_def.h"
 #include "liblvgl/misc/lv_color.h"
@@ -5,10 +7,8 @@
 #include "liblvgl/widgets/lv_btn.h"
 #include "liblvgl/widgets/lv_label.h"
 
-
-#include "global_var.h"
-#include "states.h"
-#include <cstddef>
+#include "my_includes/global_var.h"
+#include "my_includes/states.h"
 
 
 
@@ -165,9 +165,11 @@ void updateStates() {
     else if (global::autonSelected == states::autonStates::BlueSoloAWP)
         lv_obj_add_state(blueSoloAWPBtn, LV_STATE_CHECKED);
 
-    if (global::autonSelected == states::autonStates::RedPositiveCorner || global::autonSelected == states::autonStates::RedNegativeCorner || global::autonSelected == states::autonStates::RedSoloAWP)
+    if (global::autonSelected == states::autonStates::RedPositiveCorner || global::autonSelected == states::autonStates::RedNegativeCorner 
+        || global::autonSelected == states::autonStates::RedSoloAWP)
         lv_obj_add_state(redSide, LV_STATE_CHECKED);
-    else if (global::autonSelected == states::autonStates::BluePositiveCorner || global::autonSelected == states::autonStates::BlueNegativeCorner || global::autonSelected == states::autonStates::BlueSoloAWP)
+    else if (global::autonSelected == states::autonStates::BluePositiveCorner || global::autonSelected == states::autonStates::BlueNegativeCorner 
+             || global::autonSelected == states::autonStates::BlueSoloAWP)
         lv_obj_add_state(blueSide, LV_STATE_CHECKED);
 }
 

@@ -21,7 +21,8 @@ namespace states {
       Resting,
       Mogo,
       Arm,
-      Reverse
+      Reverse,
+      StoreRing
     };
   }
 

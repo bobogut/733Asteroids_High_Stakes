@@ -1,10 +1,10 @@
 // Lemlib chassis library used for chassis configuration. Relevant PROS library for motor groups, inertial sensors, optical sensors, and pneumatics.
-#include "lemlib/chassis/chassis.hpp"
-
-#include "lemlib/chassis/trackingWheel.hpp"
 #include "pros/abstract_motor.hpp"
 #include "pros/motor_group.hpp"
 #include "pros/optical.hpp"
+
+#include "lemlib/chassis/chassis.hpp"
+#include "lemlib/chassis/trackingWheel.hpp"
 
 
 
@@ -37,7 +37,7 @@ lemlib::TrackingWheel horizontalTracking(&horizontalRotationSensor,
                                          2.0, 2.3059155);
 
 // Putting together everything to fully set up odometry in Lemlib
-lemlib::OdomSensors sensors (
+lemlib::OdomSensors sensors(
     nullptr,   // &verticalTracking,   // For tracking movement on the y-axis
     nullptr,   // No second vertical tracking wheel
     &horizontalTracking, // For tracking movement on the x-axis
@@ -47,7 +47,7 @@ lemlib::OdomSensors sensors (
 );
 
 // PID constants for moving foward/backward
-lemlib::ControllerSettings lateralController (
+lemlib::ControllerSettings lateralController(
     10, // 7.5                  // Proportional gains, i.e. the weight of error on the calculation
     0,                    // Integral gains, i.e. the weight of error accumulation on the calculation 0.1
     0, // 25                    // Derivative gains, i.e. the weight of error change on the calculation
@@ -60,7 +60,7 @@ lemlib::ControllerSettings lateralController (
 );
 
 // PID constants for turning
-lemlib::ControllerSettings angularController (
+lemlib::ControllerSettings angularController(
     4,
     0, // 0.45
     30, // 30
@@ -69,7 +69,7 @@ lemlib::ControllerSettings angularController (
 );
 
 // Lemlib set up for the full base
-lemlib::Chassis base (
+lemlib::Chassis base(
     drivetrain,
     lateralController,
     angularController,
@@ -78,11 +78,11 @@ lemlib::Chassis base (
 
 
 
-pros::Motor intake(5, pros::v5::MotorGears::blue, pros::v5::MotorEncoderUnits::rotations);
+pros::Motor intake(10, pros::v5::MotorGears::blue, pros::v5::MotorEncoderUnits::rotations);
 
 
 
-pros::MotorGroup arm({-10, 1}, pros::v5::MotorGears::green, pros::v5::MotorEncoderUnits::degrees); // Right motor reversed 
+pros::MotorGroup arm({-0, 0}, pros::v5::MotorGears::green, pros::v5::MotorEncoderUnits::degrees); // Right motor reversed 
 
 
 pros::Optical optical(1); // Optical sensor for ring sorter

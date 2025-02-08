@@ -1,15 +1,14 @@
 #include "main.h"
 
-#include "ports.h"
-#include "states.h"
-#include "brain_screen.h"
-
-#include "CoordinateInfo.h"
+#include "my_includes/ports.h"
+#include "my_includes/states.h"
+#include "my_includes/brain_screen.h"
+#include "my_includes/CoordinateInfo.h"
 
 
 
 void closeClamp(bool close) {
-    // I just created this so that I do not get confused
+    // I just created this so that I do not get confused when opening and closing the clamp
     if (close)
         mogoClamp.extend();
     else
@@ -121,7 +120,7 @@ void goalRushRoutine(bool blueSide) {
 
     base.setPose(startingPosition.x, startingPosition.y, startingPosition.theta);
 
-    global::storeRing = true;
+    global::intakeState = states::intakeStates::StoreRing;
 
     base.moveToPoint(19, -36.2, 3000, {.minSpeed = 44.45, .earlyExitRange = 2});
 
@@ -146,7 +145,6 @@ void goalRushRoutine(bool blueSide) {
 
 void safeNegativeCornerRoutine(bool blueSide) {
     // Negative corner auton
-
     int32_t startTime = pros::millis();
 
     lemlib::Pose startingPosition(-51.3, 24, 270);
@@ -238,8 +236,8 @@ void ringRushRoutine(bool blueSide) {
 
     base.setPose(startingPosition.x, startingPosition.y, startingPosition.theta);
 
-    global::storeRing = true;
-
+    global::intakeState = states::intakeStates::StoreRing;
+    
     base.moveToPoint(prepTurn.x, prepTurn.y, 3000, {.minSpeed = 44.45, .earlyExitRange = 2});
 
     base.swingToHeading(wall.theta, wall.lockedSide, 1000);
@@ -263,8 +261,6 @@ void ringRushRoutine(bool blueSide) {
     base.waitUntil(8);
 
     closeClamp(true);
-
-    global::overrideIntakeState = false;
 
     pros::delay(250);
 
@@ -624,7 +620,7 @@ void autonomous() {
 
         base.swingToPoint(0, 0, lemlib::DriveSide::RIGHT, 1000, {.direction = lemlib::AngularDirection::CCW_COUNTERCLOCKWISE, .minSpeed = 83, .earlyExitRange = 5});
 
-        global::storeRing = true;
+        global::intakeState = states::intakeStates::StoreRing;
 
         base.moveToPose(0, 0, 45, 3000);
 
@@ -638,15 +634,11 @@ void autonomous() {
 
         base.waitUntilDone();
 
-        global::overrideIntakeState = true;
-
         intake.move_velocity(600);
 
         base.moveToPose(-24, 24, 315, 1500);
 
         base.waitUntilDone();
-
-        global::overrideIntakeState = false;
 
         std::cout << "Grabbed rings seven and eight at time: " << pros::millis()- startTime << ", position is: x " << base.getPose().x << ", y " << base.getPose().y << ", theta " << base.getPose().theta << std::endl;
 

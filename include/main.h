@@ -40,7 +40,7 @@
  * You should add more #includes here
  */
 // #include "okapi/api.hpp"
-#include "global_var.h"
+#include "my_includes/global_var.h"
 
 /**
  * Prototypes for the competition control tasks are redefined here to ensure
