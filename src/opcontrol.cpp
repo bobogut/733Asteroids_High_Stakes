@@ -1,17 +1,12 @@
 // Relevant PROS library are used for controller inputs, pneumatic control, and checking motor temperature (embeded in main.h). Other relevant header files are included for functions
 // important to driver control.
-#include <iostream>
-#include <ostream>
-
-#include "global_var.h"
 #include "main.h"
 
-#include "ports.h"
-#include "pros/colors.hpp"
-#include "pros/misc.h"
-#include "robot_functions.h"
-#include "states.h"
-#include "brain_screen.h"
+#include "my_includes/global_var.h"
+#include "my_includes/ports.h"
+#include "my_includes/robot_functions.h"
+#include "my_includes/states.h"
+#include "my_includes/brain_screen.h"
 
 
 
@@ -47,14 +42,10 @@ void updateIntakeStates() {
            global::intakeState = states::intakeStates::Resting;
 
         std::cout << global::intakeState << std::endl;
-    } 
-    
-    /*
-    else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) // When the R2 button is pressed set the intake to the reverse state
+    } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) // When the R2 button is pressed set the intake to the reverse state
        global::intakeState = states::intakeStates::Reverse;                                       
     else if (global::intakeState != states::intakeStates::Mogo) // If the last state was reverse and the R2 button was let go, set the intake to its resting state
        global::intakeState = states::intakeStates::Resting;
-    */
 
     /*
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) // When the down button is pressed toggle the color sorter override
@@ -66,7 +57,7 @@ void updateIntakeStates() {
 
     /*
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) // When the up button is pressed flip the color the color sorter looks for
-        global::storeRing = true;
+        global::intakeState = states::intakeStates::StoreRing;
     else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) // When the B button is pressed find the next valid "down" position
         global::findNextDown = true;
     */
@@ -84,24 +75,16 @@ void updateArmStates() {
             global::armStatesQueue.push_back(states::armStates::PrimeTwo);
     } else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
         if (global::armStatesQueue.size() != 0) {
-
-            std::cout << "Case 1" << std::endl;
-            
-
             if (global::armStatesQueue.end()[-1] == states::armStates::WallStake)
                 global::armStatesQueue.push_back(states::armStates::PrimeOne);
             else
                 global::armStatesQueue.push_back(states::armStates::WallStake);
         } else {
-            std::cout << "Case 2" << std::endl;
-
             if (global::armState == states::armStates::WallStake)
                 global::armStatesQueue.push_back(states::armStates::PrimeOne);
             else
                 global::armStatesQueue.push_back(states::armStates::WallStake);
         }
-
-        std::cout << "Arm state queue is " << global::armStatesQueue.begin()[0] << std::endl;
 
         for (int i = 0; i < global::armStatesQueue.size(); i++)
             std::cout << global::armStatesQueue.begin()[i];
@@ -161,12 +144,13 @@ void opcontrol() {
 
 
     while (true) {
-        /*
-        // optical.set_led_pwm(100); // Turns on the LED in the optical sensor to ensure that lighting on the ring is consistent
+        optical.set_led_pwm(100); // Turns on the LED in the optical sensor to ensure that lighting on the ring is consistent
 
 
 
         updateIntakeStates();
+
+        updateArmStates();
         
 
 
@@ -200,10 +184,9 @@ void opcontrol() {
         
 
         handleBase(reverse);
-        */
 
-        updateArmStates();
 
+        /*
         if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
             std::cout << "UP" << std::endl;
         else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN))
@@ -230,9 +213,10 @@ void opcontrol() {
             std::cout << "R2" << std::endl;
 
         pros::delay(5); // A delay for systems to not get overwhelmed and run properly
+        */
     }
 
-    // optical.set_led_pwm(0);
+    optical.set_led_pwm(0);
 
 
 

@@ -1,5 +1,9 @@
 For tracking changes and going into greater detail after December 10, 2024.
 
+Feb 5, 2025
+- Removed the brake from the color sort to keep momentum on the ring
+- Moved my declerations to my_includes so they are easier to find
+
 Feb 3, 2025
 - Merged MyPose class with LemLib Pose class for less clutter
 - Created a queue system for the ladybrown to decrease downtime
@@ -7,8 +11,9 @@ Feb 3, 2025
 - Fixed a bug with timeout not being properly tracked
 
 Feb 2, 2025
-- Created a parent class for all the coordiante info as they are all look to do the same thing
-- Removed the need for the coordinateInfo namespace by making the child classes have distinct names from their LemLib counterparts 
+- Created a parent class for all the coordiante info as they are all look to do the same thing  
+- Removed the need for the coordinateInfo namespace by making the child classes have distinct names from their LemLib counterparts
+- Added anti-jam code to the intake
 
 Jan 31, 2025
 - Created my own PID class to have an easier time tracking early exit range
