@@ -20,11 +20,12 @@ extern lemlib::Chassis base;
 
 
 
-extern pros::MotorGroup arm;
+extern pros::Motor arm;
 
 
 
-extern pros::Motor intake;
+extern pros::Motor intakeFirstStage;
+extern pros::Motor intakeSecondStage;
 
 
 

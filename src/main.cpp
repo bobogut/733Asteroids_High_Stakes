@@ -7,6 +7,7 @@
 #include "my_includes/ports.h"
 #include "my_includes/robot_functions.h"
 #include "my_includes/states.h"
+#include "pros/motors.h"
 
 
 
@@ -17,6 +18,8 @@ void initialize() {
 
 	optical.set_led_pwm(0); // Turn off the LED on the optical sensor to avoid draining too much from the battery
 
+	optical.set_integration_time(20);
+
 
 
 	base.calibrate(); // Calibrates the sensors for the base
@@ -26,8 +29,10 @@ void initialize() {
 	rightMotors.tare_position_all();
 
 	// Set the base motors to coast (i.e. when a movement is over gradually slow down) to avoid burnout, should only add some minor drift
-	leftMotors.set_brake_mode_all(pros::v5::MotorBrake::coast);
-	rightMotors.set_brake_mode_all(pros::v5::MotorBrake::coast);
+	// leftMotors.set_brake_mode_all(pros::v5::MotorBrake::coast);
+	// rightMotors.set_brake_mode_all(pros::v5::MotorBrake::coast);
+
+	base.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
 
 	verticalRotationSensor.reset_position();
 	horizontalRotationSensor.reset_position();
@@ -35,25 +40,27 @@ void initialize() {
 
 
 	// Default states for autonomous, intake, and arm
-	global::autonSelected = states::autonStates::RedPositiveCorner;
+	global::autonSelected = states::autonStates::None;
 
 	global::intakeState = states::intakeStates::Resting;
+
 	global::armState = states::armStates::Resting;
 	
 
 
 	// Same logic as above
-	intake.tare_position();
+	intakeFirstStage.tare_position();
+	intakeSecondStage.tare_position();
 
 	// Set the intake motors to coast (i.e. when a movement is over gradually slow down) to avoid burnout, should only add some minor drift
-	intake.set_brake_mode(pros::v5::MotorBrake::coast);
+	intakeFirstStage.set_brake_mode(pros::v5::MotorBrake::coast);
+	intakeSecondStage.set_brake_mode(pros::v5::MotorBrake::coast);
 
 	arm.tare_position_all();
 
 	// Set the arm motors to brake (i.e. when a movement is over gradually slow down) to hold position when 
-	arm.set_brake_mode_all(pros::v5::MotorBrake::brake);
+	arm.set_brake_mode(pros::v5::MotorBrake::hold);
 
-	std::cout << intake.get_position_all()[0] << intake.get_position_all()[1] << std::endl;
 
 
 	pros::task_t updateIntakeSpeed = pros::Task::create(handleIntake, "Update intake speed"); // Create a task for moving the intake so that the rest of the code will not 
@@ -62,17 +69,7 @@ void initialize() {
 	pros::task_t updateArmPosition = pros::Task::create(handleArm, "Update intake speed"); // Same logic as the intake task
 
 
-	
-
-	// Useful for checking when our base is overheating so that we can let it rest
-	if (leftMotors.is_over_temp_all()[0] || leftMotors.is_over_temp_all()[1] || leftMotors.is_over_temp_all()[2])
-		controller.rumble("- _ _");
-
-	if (rightMotors.is_over_temp_all()[0] || rightMotors.is_over_temp_all()[1] || rightMotors.is_over_temp_all()[2])
-		controller.rumble("_ - -");
-
-	if (intake.is_over_temp())
-		controller.rumble("_ - _");
+	std::cout << "Intake hook temp at " << intakeSecondStage.get_temperature() << std::endl;
 }
 
 
