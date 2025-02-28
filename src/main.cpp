@@ -14,7 +14,7 @@
 void initialize() {
 	optical.set_led_pwm(0); // Turn off the LED on the optical sensor to avoid draining too much from the battery
 
-	optical.set_integration_time(20);
+	optical.set_integration_time(20); // Optical sensor should check for new colors every 20 ms 
 
 
 
