@@ -4,7 +4,9 @@
 #include <cmath>
 #include <fstream>
 
+#include "pros/abstract_motor.hpp"
 #include "pros/misc.h"
+#include "pros/motors.h"
 #include "pros/rtos.hpp"
 
 #include "lemlib/chassis/chassis.hpp"
@@ -16,122 +18,146 @@
 
 
 
-// Top hook positions: 1st = 2.0 / 6.0, 2nd = 17.0 / 6.0, 3rd = 33.0 / 6.0
-// Neural hook position: 1st = 0.0, 2nd = 15.0 / 6.0, 3rd = 31.0 / 6.0
-// The hooks should be at the same positions every 46.0 / 6.0 rotations or 7.6666... rotations (Numbers are based on chains over knobs on a sprocket)
-
-// 16, 16, 17
-
 // Function to find potential hook positions where they are in a "top position" (i.e. where hooks are at their peak)
-std::array<float, 3> nextTopHook() {
-    float gearRatio = 48.0 / 36.0;
+std::array<int, 3> nextTopHooks() {
+    int fullRotations = intakeSecondStage.get_position() / 2385; // Used to find how many full rotations have been completed, one full rotation is 2385 degrees
 
-    float fullRotations = std::floor(intake.get_position() * 6.0 / 49.0 * gearRatio); // Used to find how many full rotations have been completed
-
-    if ((intake.get_position() * 6.0 / 49.0 - fullRotations) * gearRatio >= (36.0 / 49.0)) // Only relevant to bringing a hook to its peak. If the hooks have not completed a full rotation yet the
-        fullRotations += 1;                                                                // the third hook has already passed its peak we have to look at the next rotation otherwise the intake
-                                                                                           // goes backwards. When there is a remainder of 33 / 46 or 0.71739... (percentage of the rotation travelled 
-                                                                                           // after the third hook) we know this is the case.
-
-    float firstHookPosition = ((2.0 / 6.0) + (49.0 / 6.0) * fullRotations) * gearRatio; // Math for calculating where the hooks could be. The logic is explained above.
-    float secondHookPosition = ((18.0 / 6.0) + (49.0 / 6.0) * fullRotations) * gearRatio;
-    float thirdHookPosition = ((35.0 / 6.0) + (49.0 / 6.0) * fullRotations) * gearRatio;
+    if ((intakeSecondStage.get_position() - 2385   * fullRotations) >= 1755) // Only relevant to bringing a hook to its peak. If the hooks have not completed a full rotation yet the
+        fullRotations += 1;                                                  // the third hook has already passed or is at its peak we have to look at the next rotation otherwise the 
+                                                                             // intake goes backwards. When there is a remainder of 1755 degrees we know this is the case.
+    
+    int firstHookPosition = 180 + 2385 * fullRotations; // Math for calculating where the hooks could be. The logic is explained above.
+    int secondHookPosition = 990 + 2385 * fullRotations;
+    int thirdHookPosition = 1755 + 2385 * fullRotations;
 
     return {firstHookPosition, secondHookPosition, thirdHookPosition}; // Returns an array of the potential positions for use elsewhere in the code
 }
 
 // Function to find potential hook positions where they are in a "neutral position" (i.e. where hooks are relatively parallel to the ground to avoid the first rung of the ladder). All of
 // the logic is the same as the logic used for finding potential top hook
-std::array<float, 3> nextNeutralHook() {
-    float gearRatio = 48.0 / 36.0;
+std::array<int, 3> nextNeutralHooks() {
+    int fullRotations = intakeSecondStage.get_position() / 2385;
 
-    float fullRotations = std::floor(intake.get_position() * 6.0 / 49.0 * gearRatio); 
-
-    float firstHookPosition = (49.0 / 6.0) * fullRotations * gearRatio;
-    float secondHookPosition = ((16.0 / 6.0) + (49.0 / 6.0) * fullRotations) * gearRatio;
-    float thirdHookPosition = ((33.0 / 6.0) + (49.0 / 6.0) * fullRotations) * gearRatio;
+    int firstHookPosition = 2385 * fullRotations;
+    int secondHookPosition = 810 + 2385 * fullRotations;
+    int thirdHookPosition = 1575 + 2385 * fullRotations;
 
     return {firstHookPosition, secondHookPosition, thirdHookPosition};
 }
 
 
 
+std::array<int, 3> nextArmScoreHooks() {
+    int fullRotations = intakeSecondStage.get_position() / 2385; 
+
+    if ((intakeSecondStage.get_position() - 2385   * fullRotations) >= 1755)
+        fullRotations += 1;  
+
+    int firstHookPosition = 230 + 2385 * fullRotations;
+    int secondHookPosition = 1040 + 2385 * fullRotations;
+    int thirdHookPosition = 1805 + 2385 * fullRotations;
+
+    return {firstHookPosition, secondHookPosition, thirdHookPosition};
+}
+
+
 // For clarity when I am writing the code
 enum DesiredHookPositions {
-    TOP,
-    NEUTRAL
+    Top,
+    Neutral,
+    Arm
 };
 
 
 
 float findClosestHook(DesiredHookPositions desiredHookPosition) {
-    std::array<float, 3> potentialPositions; // An array for storing all potentially viable hook positions
-
-    std::cout << intake.get_position() << std::endl;
+    std::array<int, 3> potentialPositions; // An array for storing all potentially viable hook positions
 
 
-    if (desiredHookPosition == TOP) {
-        potentialPositions = nextTopHook();
 
-        std::cout << potentialPositions[0] << ", " << potentialPositions[1] << ", " << potentialPositions[2] << std::endl;
+    if (desiredHookPosition == Top) {
+        potentialPositions = nextTopHooks();
+
+        // std::cout << "Hook at " << intakeSecondStage.get_position() << std::endl;
 
         // Runs through every item of the potential positions array
         for (int i = 0; i < potentialPositions.size(); i++) {
-            std::cout << potentialPositions[i] << std::endl;
+            std::cout << "Hook " << i + 1 << " is " << potentialPositions[i] << std::endl;
 
-            if (potentialPositions[i] - intake.get_position() > 0) // If the value is negative we know that the hook associated with the potential position has already passed the 
-                return potentialPositions[i];                          // optical sensor and thus cannot hold the ring. As the potential positions array is arranged from smallest to
-                                                                       // largest, we can confidently assume that the first valid position matches to the correct hook.
+            if (potentialPositions[i] - intakeSecondStage.get_position() > 0) // If the value is negative we know that the hook associated with the potential position has already passed the 
+                return potentialPositions[i];                                 // optical sensor and thus cannot hold the ring. As the potential positions array is arranged from smallest to
+                                                                              // largest, we can confidently assume that the first valid position matches to the correct hook.
+            std::cout << "Hook " << i + 1 << " invalid " << potentialPositions[i] << std::endl;
+
         }
         
-    }
-    else if (desiredHookPosition == NEUTRAL) {
-        potentialPositions = nextNeutralHook();
+    } else if (desiredHookPosition == Neutral) {
+        potentialPositions = nextNeutralHooks();
 
-        std::cout << potentialPositions[0] << ", " << potentialPositions[1] << ", " << potentialPositions[2] << std::endl;
+        for (int i = 0; i < potentialPositions.size(); i++) {
+            // std::cout << potentialPositions[i] << std::endl;
+
+            if (potentialPositions[i] - intakeSecondStage.get_position() <= 0) // If the value is positive we know that the hook associated with the potential position needs to move forward to   
+                return potentialPositions[i];                                  // reach a "neutral position". As we want the intake to move backwards to avoid catching on mogos, we can 
+                                                                               // immediately discard it. The equal check is to catch when the intake has not moved yet we accidently call it to 
+                                                                               // reach a neutral position to avoid breaking the programming. As stated earlier the potential positions array is                                                                         // 
+                                                                               // arragned from smallest to largest, however the logic this time is that the last valid position should match to
+                                                                               // the correct hook as it would be the closest to the current position without having the intake move forwards.
+        }
+    } else if (desiredHookPosition == Arm) {
+        potentialPositions = nextArmScoreHooks();
+
+        // std::cout << potentialPositions[0] << ", " << potentialPositions[1] << ", " << potentialPositions[2] << std::endl;
         
         for (int i = 0; i < potentialPositions.size(); i++) {
-            std::cout << potentialPositions[i] << std::endl;
+            // std::cout << potentialPositions[i] << std::endl;
 
-            if (potentialPositions[i] - intake.get_position() <= 0) // If the value is positive we know that the hook associated with the potential position needs to move forward to   
-                return potentialPositions[i];                           // reach a "neutral position". As we want the intake to move backwards to avoid catching on mogos, we can 
-                                                                        // immediately discard it. The equal check is to catch when the intake has not moved yet we accidently call it to 
-                                                                        // reach a neutral position to avoid breaking the programming. As stated earlier the potential positions array is                                                                         // 
-                                                                        // arragned from smallest to largest, however the logic this time is that the last valid position should match to
-                                                                        // the correct hook as it would be the closest to the current position without having the intake move forwards.
+            std::cout << "Hook " << i + 1 << " is " << potentialPositions[i] << std::endl;
+
+            if (potentialPositions[i] - intakeSecondStage.get_position() > 0) // Same logic as the top hook position
+                return potentialPositions[i];     
+
+            std::cout << "Hook " << i + 1 << " invalid " << potentialPositions[i] << std::endl;
         }
     }
     
-    return 0;
+    return intakeSecondStage.get_position();
 }
 
 void moveIntakeToDesiredPosition(DesiredHookPositions desiredHookPosition) {
-    MyPID intakePID(200, 0, 0, 0, 0, 0, 400);
+    MyPID intakePID(0.002, 0, 0.3, 0, 5, 20, 1000, 0);
 
     float desiredPosition = findClosestHook(desiredHookPosition); // Find out where the intake needs to rotate to in order to properly position a hook.
 
     float error;
+    float intakeVelocity;
 
-    intake.move_absolute(desiredPosition, 600); // Starts rotating the intake towards the position.
+    std::cout << "Desired position is " << desiredPosition << std::endl;
 
-    // While error is greater than 0.0125 keep waiting 5 milliseconds to give the move_absolute function time.
-    while (std::abs(desiredPosition - intake.get_position()) > 0.1) {
-        error = (desiredPosition - intake.get_position()) * 360;
+    intakePID.update(error);
+
+    std::cout << "Exit is " << intakePID.earlyExit() << std::endl;
+
+    while (!intakePID.earlyExit()) {
+        error = (desiredPosition - intakeSecondStage.get_position()) * 360;
 
         intakePID.update(error);
 
-        intake.move_velocity(intakePID.getVelocity());
+        if (intakeSecondStage.get_position() > desiredPosition && desiredHookPosition == Top)
+            break;
+
+        intakeVelocity = intakePID.getVelocity();
+
+
+
+        intakeSecondStage.move_velocity(intakeVelocity);
 
         // std::cout << "Velocity is " << intake.get_actual_velocity() << std::endl;
+
+        std::cout << intakeSecondStage.get_position() << " " << intakeSecondStage.get_actual_velocity() << " " << intakePID.getTime() << " " << desiredPosition << std::endl;
+
         pros::delay(5);
     }
-
-    std::cout << intake.get_position() << std::endl;
-
-    intake.brake();
-
-    if (desiredHookPosition == TOP) // If we want to throw a ring off (color sort) then we want a delay to ensure the ring's momentum properly carries it off the hooks
-        pros::delay(500);
 }
 
 
@@ -139,40 +165,143 @@ void moveIntakeToDesiredPosition(DesiredHookPositions desiredHookPosition) {
 bool checkForColor(bool opposite) {
     if (((global::autonSelected == states::autonStates::RedPositiveCorner || global::autonSelected == states::autonStates::RedNegativeCorner || global::autonSelected == states::autonStates::Skills) && !opposite) || 
         ((global::autonSelected == states::autonStates::BluePositiveCorner || global::autonSelected == states::autonStates::BlueNegativeCorner) && opposite))
-            return optical.get_hue() < 18; // Check for red rings which have an approximate hue range of 15-18
+            return optical.get_hue() < 20; // Check for red rings which have an approximate hue range of 15-18
     else if (((global::autonSelected == states::autonStates::RedPositiveCorner || global::autonSelected == states::autonStates::RedNegativeCorner || global::autonSelected == states::autonStates::Skills) && opposite) || 
              ((global::autonSelected == states::autonStates::BluePositiveCorner || global::autonSelected == states::autonStates::BlueNegativeCorner) && !opposite))
-            return optical.get_hue() > 167; // Check for blue rings which have an approximate hue range of 167-
+            return optical.get_hue() > 200; // Check for blue rings which have an approximate hue range of 220-
+    else if (global::autonSelected == states::autonStates::None)
+        return false;
 
     return false;
 }
 
 
 
+bool inSlowRange(int targetPosition) {
+    // float targetPosition = findClosestHook(Top);
+
+    // std::cout << "Error is " << abs(targetPosition - intakeSecondStage.get_position()) << " targe position is " << targetPosition << std::endl;
+
+    return (targetPosition - intakeSecondStage.get_position()) <= 30;
+}
+
+bool inSortRange(int targetPosition) {
+    // float targetPosition = findClosestHook(Top);
+
+    // std::cout << "Error is " << abs(targetPosition - intakeSecondStage.get_position()) << " targe position is " << targetPosition << std::endl;
+
+    return (targetPosition - intakeSecondStage.get_position()) <= 0;
+}
+
+
+
 void handleIntake() {
+    std::cout << "init pos is " << intakeSecondStage.get_position() << std::endl;
+
+
     int intakeSpeed = 0;
 
     bool timerRunning = false;
     int32_t jamStartTime = 0;
+
+    bool sortRing = false;
+    int targetPosition = 0;
 
     while (true) {
         // std::cout << "Hue is " << optical.get_hue() << std::endl;
         // std::cout << "intake state is " << global::intakeState << std::endl;
 
         // If the driver has not overriden the color sort, look for opposing rings to throw off at the top.
-        if (checkForColor(!global::flipColorSort) && !global::overrideColorSort) {
-            moveIntakeToDesiredPosition(TOP); // Moves a hook to its top position
 
-            std::cout << "Here hello" << std::endl;
+        /*
+        if (checkForColor(!global::flipColorSort) && !global::overrideColorSort) {
+            std::cout << "Found opposing ring? " << checkForColor(!global::flipColorSort) << std::endl;
+
+            moveIntakeToDesiredPosition(Top); // Moves a hook to its top position
+
+
+            // std::cout << "intake at 1" << intakeSecondStage.get_position() << std::endl;
+            std::cout << "hello" << std::endl;
+
+            global::intakeState = states::intakeStates::Resting;
+
+        }
+        */
+
+        if (checkForColor(!global::flipColorSort) && !global::overrideColorSort) {
+            if (!sortRing)
+                targetPosition = findClosestHook(Top);
+
+            sortRing = true;
+        } 
+
+
+        if (global::intakeState == states::intakeStates::Mogo && global::armState == states::armStates::PrimeOne && checkForColor(global::flipColorSort)) {
+            moveIntakeToDesiredPosition(Arm);
+        
+            global::intakeState = states::intakeStates::Resting;
         }
 
+
+
+        /*
+        if (global::intakeState == states::intakeStates::Testing) {
+            // intakeSecondStage.move_absolute(205, 600);
+
+            // while (205 - intakeSecondStage.get_position() >= 5) {
+                // std::cout << "intake at 1" << intakeSecondStage.get_position() << std::endl;
+
+                // pros::delay(5);
+            // }
+
+            // intakeSecondStage.move_absolute(175, 10);
+
+            // while (175 - intakeSecondStage.get_position() <= -10) {
+                // std::cout << "intake at 2" << intakeSecondStage.get_position() << std::endl;
+
+                // pros::delay(5);
+            // }
+
+            moveIntakeToDesiredPosition(Top);
+
+            global::intakeState = states::intakeStates::Resting;
+        }
+        */
+
+        // If the robot knows it has it an enemy ring and is within a few degrees of the position
+        if (sortRing && inSortRange(targetPosition)) {
+            // std::cout << "Hello world i'm here" << std::endl;
+
+            // std::cout << "Stop pos at " << intakeSecondStage.get_position() << std::endl;
+
+
+            // pros::delay(75); // Allow the intake to run a bit more to account for the stop range
+
+            intakeSecondStage.set_brake_mode(pros::v5::MotorBrake::brake); // Stop the untake for 500 ms, brake mode is set to brake to ensure a quick stop.
+            intakeSecondStage.brake();                                          // Stopping the hook should allow the ring's momentum to carry it over the mogo.
+            pros::delay(500);
+
+            // std::cout << "Mid pos at " << intakeSecondStage.get_position() << std::endl;
+
+
+            intakeSecondStage.move_velocity(-600);
+
+            pros::delay(100);
+            
+            intakeSecondStage.set_brake_mode(pros::v5::MotorBrake::coast); // Brake mode is set back to coast to avoid motor burn out
+
+            sortRing = false; // Acknowledge that the ring has been sorted
+
+            // std::cout << "Final intake pos at " << intakeSecondStage.get_position() << std::endl;
+        } 
+
+
+
         // Same logic as the color sorter except for moving a hook to its neutral position
-        if (global::findNextDown) { 
-            intake.brake();
+        if (global::intakeState == states::intakeStates::FindNextDown) { 
+            moveIntakeToDesiredPosition(Neutral);
 
-            moveIntakeToDesiredPosition(NEUTRAL);
-
-            global::findNextDown = false;
+            global::intakeState = states::intakeStates::Resting;
         }
 
 
@@ -180,51 +309,70 @@ void handleIntake() {
         if (global::intakeState == states::intakeStates::StoreRing && checkForColor(global::flipColorSort))
             global::intakeState = states::intakeStates::Resting;
 
-        if (global::intakeState == states::intakeStates::Arm && intake.get_torque() > 0.34) {
-            std::cout << "Hello world ring in LB" << std::endl;
+        if (global::intakeState == states::intakeStates::Arm && checkForColor(global::flipColorSort)) {
+            moveIntakeToDesiredPosition(Top);
+
             global::intakeState = states::intakeStates::Resting;
+
+            intakeSecondStage.brake();
         }
 
 
-
-        if (intake.get_torque() > 0.34 && !timerRunning && global::intakeState != states::intakeStates::Arm) {
+        // If the torque caps out and the timer is not running, start the timer
+        if (intakeSecondStage.get_torque() >= 0.34 && !timerRunning) {
             timerRunning = true;
             jamStartTime = pros::millis();
-        } else if (intake.get_torque() < 0.34 && timerRunning || global::intakeState == states::intakeStates::Arm)
-            timerRunning = false;
+        } else if (intakeSecondStage.get_torque() < 0.34 && timerRunning )
+            timerRunning = false; // If the torque is  no longer capped out and the timer is running, stop the timer
 
-        if (timerRunning && pros::millis() - jamStartTime > 250) {
-            intake.move_velocity(-600);
-            pros::delay(250);
-            intake.move_velocity(intakeSpeed);
+        // If the timer is running and passed
+        if (timerRunning && pros::millis() - jamStartTime >= 250 && global::armState != states::armStates::PrimeOne) {
+            intakeSecondStage.move_velocity(-600); // Reverse the second stage of the intake for 750 ms, this stops the hooks from interfering with the ring
+            pros::delay(500);
+            intakeSecondStage.move_velocity(intakeSpeed); // Start moving the intake the right direction
 
-            timerRunning = false;
-        }
+            timerRunning = false; // Disable the timer
+        } else if (timerRunning && pros::millis() - jamStartTime >= 500 && global::armState == states::armStates::PrimeOne)
+            global::intakeState = states::intakeStates::Resting;
 
 
 
         if (global::intakeState == states::intakeStates::Mogo || global::intakeState == states::intakeStates::StoreRing 
-            || global::intakeState == states::intakeStates::Arm) // Sets the intake to 600 rpm, running directly to the mogo
-            intakeSpeed = 600;
+            || global::intakeState == states::intakeStates::FirstStage)
+            intakeSpeed = 600;  // Sets the intake to 600 rpm, running directly to the mogo
         else if (global::intakeState == states::intakeStates::Resting) // Stops the intake
             intakeSpeed = 0;
-            // std::cout << intakeSpeed << std::endl;
         else if (global::intakeState == states::intakeStates::Reverse) // Reverses the intake at 600 rpm
             intakeSpeed = -600;
-        
 
 
-        intake.move_velocity(intakeSpeed); 
-        
-        // if (intake.get_actual_velocity() != 0)
-            // std::cout << "Velocity is " << intake.get_actual_velocity() << " target velocity is " << intake.get_target_velocity() << std::endl;
+
+        // if (sortRing && inSortRange(targetPosition))
+            // intakeSpeed = 450;
+
+
+
+        intakeFirstStage.move_velocity(intakeSpeed);
+
+        // if ((global::intakeState == states::intakeStates::Mogo && global::armState == states::armStates::PrimeOne))
+            // intakeSecondStage.move_velocity(intakeSpeed * 150 / 600);
+        if (global::armState == states::armStates::WallStake)
+            intakeSecondStage.move_velocity(-intakeSpeed * 150 / 600);
+        else if (global::intakeState != states::intakeStates::FirstStage)
+            intakeSecondStage.move_velocity(intakeSpeed);
+        else
+            intakeSecondStage.move_velocity(0);
+
+
+
+        // std::cout << "Intake pos " << intakeSecondStage.get_position() << std::endl;
+
 
 
 
         pros::delay(5); // A delay to ensure all processes run smoothly
     }
 }
-
 
 
 
@@ -239,11 +387,12 @@ void handleArm() {
 
     bool inMotion = false; // Whether or not the arm is still moving
 
-    MyPID armPID(0.65, 0.0, 0.6, 0.0, 5.0, 10, 0); // An instance of the MyPID class to calculate the outputs
+    MyPID armPID(0.75, 0.0, 0.1, 0.0, 1, 500, 2000, 0); // An instance of the MyPID class to calculate the outputs
 
 
 
     bool removedBuffer = true; // Whether or not we have completed a certain motion
+    bool freeze = true;
 
 
     
@@ -252,21 +401,20 @@ void handleArm() {
         if (global::armState == states::armStates::Resting)
             targetArmPosition = 0;
         else if (global::armState == states::armStates::PrimeOne)
-            targetArmPosition = 100;
+            targetArmPosition = 90; // Numbers from testing
         else if (global::armState == states::armStates::PrimeTwo)
-            targetArmPosition = 130;
+            targetArmPosition = 180;
         else if (global::armState == states::armStates::WallStake)
-            targetArmPosition = 350;
+            targetArmPosition = 530;
         else if (global::armState == states::armStates::AllianceStake)
-            targetArmPosition = 450;
+            targetArmPosition = 730;
         else if (global::armState == states::armStates::TipMogo)
-            targetArmPosition = 500; // 500
+            targetArmPosition = 830;
 
 
 
-        currentArmPosition = (arm.get_position_all()[0] + arm.get_position_all()[1]) / 2 - 30; // Taking the average of boths motors to hopefully filter out error. I want to offset the position
-                                                                                               // by 30 degrees to avoid having the resting position crash into the metal all the time.
-
+        currentArmPosition = arm.get_position(); // Taking the average of boths motors to hopefully filter out error. I want to offset the position
+                                                 // by 30 degrees to avoid having the resting position crash into the metal all the time.
         error = targetArmPosition - currentArmPosition; // Calculates the error for the PID
 
         armPID.update(error); // Updates all the values of the PID to get the next output
@@ -275,15 +423,15 @@ void handleArm() {
 
         inMotion = !armPID.earlyExit(); // Check to see if the PID is within its exit range so it is not stuck on one motion
 
-        if (inMotion) {
-            // If we are not within the exit range move the arm at the velocity of the PID output
-            armVelocity = armPID.getVelocity();
+        // If we are not within the exit range
+        if (inMotion && !freeze) {
+            armVelocity = armPID.getVelocity(); // Get the velocity
 
-            arm.move_velocity(armVelocity);
+            arm.move_velocity(armVelocity); // Move the arm at the appropiate speed
+
+            // std::cout << currentArmPosition << " " << arm.get_actual_velocity() << " " << targetArmPosition << " " << armPID.getTime() << std::endl;
         } else {
             arm.brake(); // Stops the arm
-
-
 
             armPID.reset(); // Resets the PID for the next motion
 
@@ -291,22 +439,25 @@ void handleArm() {
 
             // Basically a check for whether we have completed the motion and can move onto the next item in queue
             if (!removedBuffer) {
-                global::armStatesQueue.erase(global::armStatesQueue.begin()); // Deletes the item from the queue
-                removedBuffer = true;                                                  // Ensures that we do not delete the entire queue without completing all the actions
+                if (global::armStatesQueue.size() != 0)
+                    global::armStatesQueue.erase(global::armStatesQueue.begin()); // Deletes the item from the queue
+                removedBuffer = true;                                                      // Ensures that we do not delete the entire queue without completing all the actions
             }
-
-
 
             // Basically checks for if we have a queue
-            if (global::armStatesQueue.size() != 0) {
+            if (global::armStatesQueue.size() != 0 && !(global::armState == states::armStates::WallStake 
+                && controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2))) {
                 global::armState = global::armStatesQueue.begin()[0]; // If we do have a queue we move the arm to the first/next position in queue
                 removedBuffer = false;                                // Reset the buffer variable so we know we have not completed the motion
-            }
+                freeze = false;
+                inMotion = true;
+            } else
+                freeze = true;
         }
 
 
 
-        pros::delay(100);
+        pros::delay(5);
     }
 }
 
@@ -319,7 +470,7 @@ void handleBase(bool reverse) {
     int rightVelocity = 0;
 
     if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) // When R2 is pressed toggle the reverse state
-            reverse = !reverse;
+        reverse = !reverse;
 
     if (!reverse) {
         // Regular chassis controls
@@ -331,22 +482,6 @@ void handleBase(bool reverse) {
         rightVelocity = driveCurve.curve(controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y) * -1); // (i.e., left now controls rght and vice versa)
     }
 
-    if (controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y) != 0)
-        std::cout << "Right " << controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y) << std::endl;
-
-    if (controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y) != 0)
-        std::cout << "Left " << controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y) << std::endl;
-
-
-    /*
-    std::cout << "Left current " << leftMotors.get_current_draw_all()[0] << " " << leftMotors.get_current_draw_all()[1] << " " << leftMotors.get_current_draw_all()[2] << std::endl;
-    std::cout << "Right current " << rightMotors.get_current_draw_all()[0] << " " << rightMotors.get_current_draw_all()[1] << " " << rightMotors.get_current_draw_all()[2] << std::endl;
-
-
-    std::cout << "Left temp " << leftMotors.get_temperature_all()[0] << " " << leftMotors.get_temperature_all()[1] << " " << leftMotors.get_temperature_all()[2] << std::endl;
-    std::cout << "Right temp " << rightMotors.get_temperature_all()[0] << " " << rightMotors.get_temperature_all()[1] << " " << rightMotors.get_temperature_all()[2] << std::endl;
-    */
-    
     base.tank(leftVelocity, rightVelocity); // Configures the base to have tank control (one joystick direction controls one side of the robot). Simply uses the left and right
                                                         // joysticks.
 }

@@ -22,7 +22,9 @@ namespace states {
       Mogo,
       Arm,
       Reverse,
-      StoreRing
+      StoreRing,
+      FindNextDown,
+      FirstStage,
     };
   }
 
