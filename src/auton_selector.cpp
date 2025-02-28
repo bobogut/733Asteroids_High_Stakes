@@ -149,6 +149,7 @@ void updateStates() {
     lv_obj_clear_state(blueSoloAWPBtn, LV_STATE_CHECKED);
 
 
+
     // Adds the checked state to the button matching the autonomous selected
     if (global::autonSelected == states::autonStates::Skills)
         lv_obj_add_state(skillsBtn, LV_STATE_CHECKED);

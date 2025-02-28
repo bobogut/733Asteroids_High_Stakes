@@ -1,8 +1,27 @@
 For tracking changes and going into greater detail after December 10, 2024.
 
+Feb 25, 2025
+- Reimplemented color sort, calculations changed due to new sprocket size
+- Changed calculations to use integers rather than floats due to using degrees rather than rotations
+
+Feb 22, 2025
+- Got a basic 3 ring auton for quals and a 4 ring auton for elims
+
+Feb 20-21, 2025
+- Worked on skills path
+
+Feb 18, 2025
+- Created a queue system for holding ladybrown arm states
+- Got the ladybrown PID tuned
+- Added extra timeouts to avoid the jittering motion/burning out the motor
+
+Feb 11, 2025
+- Implemented code for just running the first stage now that our intake runs on 16.5W, mainly for storing rings in autonomous
+
 Feb 5, 2025
 - Removed the brake from the color sort to keep momentum on the ring
 - Moved my declerations to my_includes so they are easier to find
+- Made store ring and find next down intake states for consistency
 
 Feb 3, 2025
 - Merged MyPose class with LemLib Pose class for less clutter
