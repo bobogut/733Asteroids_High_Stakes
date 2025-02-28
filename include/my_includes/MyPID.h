@@ -11,23 +11,26 @@ class MyPID {
 
         const float antiWindup;
 
-        const float exitRange; // When the error is small enough that we are satisfied with not moving anymore
-        const int exitTimeout; // How long we should wait in our exit range before stopping the arm
+        const float exitRange;      // When the error is small enough that we are satisfied with not moving anymore
+        const int exitTimeout;      // How long we should wait in our exit range before stopping the arm
+        const int largeExitTimeout; // If we are unable to enter the exit range or settle by itself within a reasonable time, just stop the motion
 
         const int minSpeed;
 
     private:
-        float iError = 0;      // Integral error or error built up over time
-        float lastError = NAN; // Used for calculating derivative error or rate of error change
-        float dError = 0;      // Derivative error or rate of error change
+        float iError = 0;          // Integral error or error built up over time
+        float lastError = NAN;     // Used for calculating derivative error or rate of error change
+        float dError = 0;          // Derivative error or rate of error change
 
-        float velocity = 0;    // Stores the computed velocity for the PID
+        float velocity = 0;        // Stores the computed velocity for the PID
 
-        int trackingTime = 0;  // Used for tracking time until early exit
+        int trackingTime = 0;      // Used for tracking time until early exit
+        int trackingTimeLarge = 0; // Used for tracking the time the overall motion takes
 
     public:
-        MyPID(float kP, float kI, float kD, float antiWindup, float exitRange, int exitTimeout, int minSpeed) : kP(kP), kI(kI), kD(kD), antiWindup(antiWindup), exitRange(exitRange), 
-                                                                                                                exitTimeout(exitTimeout), minSpeed(minSpeed) {};
+        MyPID(float kP, float kI, float kD, float antiWindup, float exitRange, int exitTimeout, int largeExitTimeout, int minSpeed) : kP(kP), kI(kI), kD(kD), antiWindup(antiWindup), 
+                                                                                                                                      exitRange(exitRange), exitTimeout(exitTimeout),
+                                                                                                                                      largeExitTimeout(largeExitTimeout), minSpeed(minSpeed) {};
 
         // Updates all the necessary PID variables
         void update(float error) {
@@ -36,10 +39,12 @@ class MyPID {
 
 
 
-            if (abs(error) < exitRange)
+            if (abs(error) <= exitRange)
                 trackingTime += 5;
-            else
+            else 
                 trackingTime = 0;
+
+            trackingTimeLarge += 5;
 
 
 
@@ -52,19 +57,28 @@ class MyPID {
 
             lastError = error;
 
-
-
             velocity = kP * error + kI * iError + kD * dError / 5;
 
-            velocity < minSpeed ? velocity = minSpeed : velocity;
+            abs(velocity) < minSpeed ? velocity = minSpeed : velocity; // If we have a minimum speed for the PID set it to the minimum speed
         }
 
         float getVelocity() {
-            return velocity; // Returns the velocity
+            return velocity; // Returns the velocity calculated by the PID
+        }
+
+        float getTime() {
+            return trackingTimeLarge; // Return total time PID has been running for
         }
 
         bool earlyExit() {
-            return trackingTime > exitTimeout; // Returns whether or not the time range for early exit has been met
+            if (exitRange > 0 && largeExitTimeout > 0)
+                return trackingTime >= exitTimeout || trackingTimeLarge >= largeExitTimeout; // Returns whether or not the time range for early exit has been met
+            else if (exitRange > 0 && largeExitTimeout == 0)
+                return trackingTime >= exitTimeout;
+            else if (exitRange == 0 && largeExitTimeout > 0)
+                return trackingTimeLarge >= largeExitTimeout;
+            else
+                return false;
         }
 
         // Resets all the relevant variables for the next PID motion
@@ -72,5 +86,6 @@ class MyPID {
             lastError = NAN;
             iError = 0;
             trackingTime = 0;
+            trackingTimeLarge = 0;
         }
 };
