@@ -132,18 +132,14 @@ void moveIntakeToDesiredPosition(DesiredHookPositions desiredHookPosition) {
     float error;
     float intakeVelocity;
 
-    std::cout << "Desired position is " << desiredPosition << std::endl;
-
     intakePID.update(error);
 
-    std::cout << "Exit is " << intakePID.earlyExit() << std::endl;
-
     while (!intakePID.earlyExit()) {
-        error = (desiredPosition - intakeSecondStage.get_position()) * 360;
+        error = desiredPosition - intakeSecondStage.get_position();
 
         intakePID.update(error);
 
-        if (intakeSecondStage.get_position() > desiredPosition && desiredHookPosition == Top)
+        if (intakeSecondStage.get_position() > desiredPosition && (desiredHookPosition == Top || desiredHookPosition == Arm))
             break;
 
         intakeVelocity = intakePID.getVelocity();
@@ -152,9 +148,9 @@ void moveIntakeToDesiredPosition(DesiredHookPositions desiredHookPosition) {
 
         intakeSecondStage.move_velocity(intakeVelocity);
 
-        // std::cout << "Velocity is " << intake.get_actual_velocity() << std::endl;
+        // std::cout << intakeSecondStage.get_position() << " " << intakeSecondStage.get_actual_velocity() << " " << intakePID.getTime() << " " << desiredPosition << std::endl;
 
-        std::cout << intakeSecondStage.get_position() << " " << intakeSecondStage.get_actual_velocity() << " " << intakePID.getTime() << " " << desiredPosition << std::endl;
+
 
         pros::delay(5);
     }
@@ -177,19 +173,7 @@ bool checkForColor(bool opposite) {
 
 
 
-bool inSlowRange(int targetPosition) {
-    // float targetPosition = findClosestHook(Top);
-
-    // std::cout << "Error is " << abs(targetPosition - intakeSecondStage.get_position()) << " targe position is " << targetPosition << std::endl;
-
-    return (targetPosition - intakeSecondStage.get_position()) <= 30;
-}
-
 bool inSortRange(int targetPosition) {
-    // float targetPosition = findClosestHook(Top);
-
-    // std::cout << "Error is " << abs(targetPosition - intakeSecondStage.get_position()) << " targe position is " << targetPosition << std::endl;
-
     return (targetPosition - intakeSecondStage.get_position()) <= 0;
 }
 
@@ -208,25 +192,7 @@ void handleIntake() {
     int targetPosition = 0;
 
     while (true) {
-        // std::cout << "Hue is " << optical.get_hue() << std::endl;
-        // std::cout << "intake state is " << global::intakeState << std::endl;
-
         // If the driver has not overriden the color sort, look for opposing rings to throw off at the top.
-
-        /*
-        if (checkForColor(!global::flipColorSort) && !global::overrideColorSort) {
-            std::cout << "Found opposing ring? " << checkForColor(!global::flipColorSort) << std::endl;
-
-            moveIntakeToDesiredPosition(Top); // Moves a hook to its top position
-
-
-            // std::cout << "intake at 1" << intakeSecondStage.get_position() << std::endl;
-            std::cout << "hello" << std::endl;
-
-            global::intakeState = states::intakeStates::Resting;
-
-        }
-        */
 
         if (checkForColor(!global::flipColorSort) && !global::overrideColorSort) {
             if (!sortRing)
@@ -244,45 +210,11 @@ void handleIntake() {
 
 
 
-        /*
-        if (global::intakeState == states::intakeStates::Testing) {
-            // intakeSecondStage.move_absolute(205, 600);
-
-            // while (205 - intakeSecondStage.get_position() >= 5) {
-                // std::cout << "intake at 1" << intakeSecondStage.get_position() << std::endl;
-
-                // pros::delay(5);
-            // }
-
-            // intakeSecondStage.move_absolute(175, 10);
-
-            // while (175 - intakeSecondStage.get_position() <= -10) {
-                // std::cout << "intake at 2" << intakeSecondStage.get_position() << std::endl;
-
-                // pros::delay(5);
-            // }
-
-            moveIntakeToDesiredPosition(Top);
-
-            global::intakeState = states::intakeStates::Resting;
-        }
-        */
-
         // If the robot knows it has it an enemy ring and is within a few degrees of the position
         if (sortRing && inSortRange(targetPosition)) {
-            // std::cout << "Hello world i'm here" << std::endl;
-
-            // std::cout << "Stop pos at " << intakeSecondStage.get_position() << std::endl;
-
-
-            // pros::delay(75); // Allow the intake to run a bit more to account for the stop range
-
             intakeSecondStage.set_brake_mode(pros::v5::MotorBrake::brake); // Stop the untake for 500 ms, brake mode is set to brake to ensure a quick stop.
             intakeSecondStage.brake();                                          // Stopping the hook should allow the ring's momentum to carry it over the mogo.
             pros::delay(500);
-
-            // std::cout << "Mid pos at " << intakeSecondStage.get_position() << std::endl;
-
 
             intakeSecondStage.move_velocity(-600);
 
@@ -291,8 +223,6 @@ void handleIntake() {
             intakeSecondStage.set_brake_mode(pros::v5::MotorBrake::coast); // Brake mode is set back to coast to avoid motor burn out
 
             sortRing = false; // Acknowledge that the ring has been sorted
-
-            // std::cout << "Final intake pos at " << intakeSecondStage.get_position() << std::endl;
         } 
 
 
@@ -304,8 +234,6 @@ void handleIntake() {
             global::intakeState = states::intakeStates::Resting;
         }
 
-
-
         if (global::intakeState == states::intakeStates::StoreRing && checkForColor(global::flipColorSort))
             global::intakeState = states::intakeStates::Resting;
 
@@ -316,6 +244,7 @@ void handleIntake() {
 
             intakeSecondStage.brake();
         }
+
 
 
         // If the torque caps out and the timer is not running, start the timer
@@ -345,28 +274,14 @@ void handleIntake() {
         else if (global::intakeState == states::intakeStates::Reverse) // Reverses the intake at 600 rpm
             intakeSpeed = -600;
 
-
-
-        // if (sortRing && inSortRange(targetPosition))
-            // intakeSpeed = 450;
-
-
-
         intakeFirstStage.move_velocity(intakeSpeed);
 
-        // if ((global::intakeState == states::intakeStates::Mogo && global::armState == states::armStates::PrimeOne))
-            // intakeSecondStage.move_velocity(intakeSpeed * 150 / 600);
         if (global::armState == states::armStates::WallStake)
             intakeSecondStage.move_velocity(-intakeSpeed * 150 / 600);
         else if (global::intakeState != states::intakeStates::FirstStage)
             intakeSecondStage.move_velocity(intakeSpeed);
         else
             intakeSecondStage.move_velocity(0);
-
-
-
-        // std::cout << "Intake pos " << intakeSecondStage.get_position() << std::endl;
-
 
 
 
