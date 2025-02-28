@@ -234,16 +234,6 @@ void handleIntake() {
             global::intakeState = states::intakeStates::Resting;
         }
 
-        if (global::intakeState == states::intakeStates::StoreRing && checkForColor(global::flipColorSort))
-            global::intakeState = states::intakeStates::Resting;
-
-        if (global::intakeState == states::intakeStates::Arm && checkForColor(global::flipColorSort)) {
-            moveIntakeToDesiredPosition(Top);
-
-            global::intakeState = states::intakeStates::Resting;
-
-            intakeSecondStage.brake();
-        }
 
 
 
