@@ -7,27 +7,8 @@
 #include "my_includes/robot_functions.h"
 #include "my_includes/states.h"
 #include "my_includes/brain_screen.h"
+#include "pros/misc.h"
 
-
-
-/*
-9/12
-
-11/12 needed
-New buttons: 
-
-a (doinker),
-l1 (intake toggle),
-r1 (mogo),
-y (reverse drive),
-up (outtake),
-r2 (wall stake if primed, primed if wall stake),
-l2 (prime lb if rest, rest lb if extended/scored),
-down (tip),
-b (alliance stake),
-? (color sort override),
-? (down position)
-*/
 
 
 void updateIntakeStates() {
@@ -40,62 +21,63 @@ void updateIntakeStates() {
            global::intakeState = states::intakeStates::Mogo;
         else
            global::intakeState = states::intakeStates::Resting;
-
-        std::cout << global::intakeState << std::endl;
-    } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT)) // When the R2 button is pressed set the intake to the reverse state
+    } else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) // When the R2 button is pressed set the intake to the reverse state
        global::intakeState = states::intakeStates::Reverse;                                       
-    else if (global::intakeState != states::intakeStates::Mogo) // If the last state was reverse and the R2 button was let go, set the intake to its resting state
-       global::intakeState = states::intakeStates::Resting;
 
-    /*
-    if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) // When the down button is pressed toggle the color sorter override
-        global::flipColorSort = !global::flipColorSort;
-    else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP)) // When the up button is pressed flip the color the color sorter looks for
+
+
+    if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X)) // When the up button is pressed flip the color the color sorter looks for
         global::overrideColorSort = !global::overrideColorSort;
-    */
-
-
-    /*
-    if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) // When the up button is pressed flip the color the color sorter looks for
-        global::intakeState = states::intakeStates::StoreRing;
-    else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) // When the B button is pressed find the next valid "down" position
-        global::findNextDown = true;
-    */
 }
 
 
 
 void updateArmStates() {
-    if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2)) {
-        if (global::armState == states::armStates::AllianceStake || global::armState == states::armStates::TipMogo || global::armState == states::armStates::WallStake)
-            global::armStatesQueue.push_back(states::armStates::Resting);
-        else if (global::armState == states::armStates::Resting)
-            global::armStatesQueue.push_back(states::armStates::PrimeOne);
-        else
-            global::armStatesQueue.push_back(states::armStates::PrimeTwo);
-    } else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
+    if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT)) {
         if (global::armStatesQueue.size() != 0) {
-            if (global::armStatesQueue.end()[-1] == states::armStates::WallStake)
+            if (global::armStatesQueue.end()[-1] == states::armStates::AllianceStake || global::armStatesQueue.end()[-1] == states::armStates::WallStake
+                || global::armStatesQueue.end()[-1] == states::armStates::TipMogo || global::armStatesQueue.end()[-1] == states::armStates::PrimeTwo)
+                global::armStatesQueue.push_back(states::armStates::Resting);
+            else if (global::armStatesQueue.end()[-1] == states::armStates::Resting )
                 global::armStatesQueue.push_back(states::armStates::PrimeOne);
             else
-                global::armStatesQueue.push_back(states::armStates::WallStake);
+                global::armStatesQueue.push_back(states::armStates::PrimeTwo);
         } else {
-            if (global::armState == states::armStates::WallStake)
+            if (global::armState == states::armStates::AllianceStake || global::armState == states::armStates::TipMogo
+                || global::armState == states::armStates::WallStake || global::armState == states::armStates::PrimeTwo)
+                global::armStatesQueue.push_back(states::armStates::Resting);
+            else if (global::armState == states::armStates::Resting )
                 global::armStatesQueue.push_back(states::armStates::PrimeOne);
             else
-                global::armStatesQueue.push_back(states::armStates::WallStake);
+                global::armStatesQueue.push_back(states::armStates::PrimeTwo);
         }
-
-        for (int i = 0; i < global::armStatesQueue.size(); i++)
-            std::cout << global::armStatesQueue.begin()[i];
-
-        std::cout << "" << std::endl;
-    } else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
-        global::armStatesQueue.push_back(states::armStates::AllianceStake);
     } else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN)) {
-        global::armStatesQueue.push_back(states::armStates::TipMogo);
+        if (global::armState != states::armStates::TipMogo) {
+            global::armStatesQueue.clear();
+
+            global::armStatesQueue.push_back(states::armStates::TipMogo);
+        } else
+            global::armStatesQueue.push_back(states::armStates::Resting);
+    } else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT)) {
+        if (global::armState != states::armStates::AllianceStake) {
+            global::armStatesQueue.clear();
+
+            global::armStatesQueue.push_back(states::armStates::AllianceStake);
+
+            global::armStatesQueue.push_back(states::armStates::Resting);
+        }
     }
 
+
+    if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
+        global::armStatesQueue.clear();
+
+        if (global::armState != states::armStates::WallStake)
+            global::armStatesQueue.push_back(states::armStates::WallStake);
+    } else if (global::armState == states::armStates::WallStake) {
+        if (global::armStatesQueue.size() == 0)
+            global::armStatesQueue.push_back(states::armStates::PrimeOne);
+    }
 }
 
 
@@ -140,7 +122,7 @@ void opcontrol() {
     */
 
     bool reverse = false; // Whether or not the controllers for the chassis should be reversed;
-    
+
 
 
     while (true) {
@@ -154,7 +136,7 @@ void opcontrol() {
         
 
 
-        // handlePneumatics();
+        handlePneumatics();
 
         std::string clampOpen;
 
@@ -167,53 +149,16 @@ void opcontrol() {
 
 
         
-        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) // When R2 is pressed toggle the reverse state
+        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) // When B is pressed toggle the reverse state
             reverse = !reverse;
 
-        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1)) {
-            global::armState = states::armStates::TipMogo;
-            // std::cout << "Here notice me " << global::armState << std::endl;
-        }
 
-
-        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2)) {
-            global::armState = states::armStates::Resting;
-            std::cout << "notice me" << std::endl;
-        }
-
-        
 
         handleBase(reverse);
 
 
-        /*
-        if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP))
-            std::cout << "UP" << std::endl;
-        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN))
-            std::cout << "DOWN" << std::endl;
-        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT))
-            std::cout << "LEFT" << std::endl;
-        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT))
-            std::cout << "RIGHT" << std::endl;
-        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A))
-            std::cout << "A" << std::endl;
-        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B))
-            std::cout << "B" << std::endl;
-        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y))
-            std::cout << "Y" << std::endl;
-        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X))
-            std::cout << "X" << std::endl;
-        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1))
-            std::cout << "L1" << std::endl;
-        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2))
-            std::cout << "L2" << std::endl;
-        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1))
-            std::cout << "R1" << std::endl;
-        else if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2))
-            std::cout << "R2" << std::endl;
 
         pros::delay(5); // A delay for systems to not get overwhelmed and run properly
-        */
     }
 
     optical.set_led_pwm(0);
