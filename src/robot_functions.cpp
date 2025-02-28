@@ -318,8 +318,8 @@ void handleArm() {
 
 
 
-        currentArmPosition = arm.get_position(); // Taking the average of boths motors to hopefully filter out error. I want to offset the position
-                                                 // by 30 degrees to avoid having the resting position crash into the metal all the time.
+        currentArmPosition = arm.get_position();
+
         error = targetArmPosition - currentArmPosition; // Calculates the error for the PID
 
         armPID.update(error); // Updates all the values of the PID to get the next output
@@ -333,8 +333,6 @@ void handleArm() {
             armVelocity = armPID.getVelocity(); // Get the velocity
 
             arm.move_velocity(armVelocity); // Move the arm at the appropiate speed
-
-            // std::cout << currentArmPosition << " " << arm.get_actual_velocity() << " " << targetArmPosition << " " << armPID.getTime() << std::endl;
         } else {
             arm.brake(); // Stops the arm
 
@@ -355,9 +353,8 @@ void handleArm() {
                 global::armState = global::armStatesQueue.begin()[0]; // If we do have a queue we move the arm to the first/next position in queue
                 removedBuffer = false;                                // Reset the buffer variable so we know we have not completed the motion
                 freeze = false;
-                inMotion = true;
             } else
-                freeze = true;
+                freeze = true; // Used to prevent a motion from starting again without registering a new state
         }
 
 
