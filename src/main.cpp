@@ -12,10 +12,6 @@
 
 
 void initialize() {
-	pros::task_t writeToFile = pros::Task::create( storeCoordinates, "Store cooridnates in SD card");
-
-
-
 	optical.set_led_pwm(0); // Turn off the LED on the optical sensor to avoid draining too much from the battery
 
 	optical.set_integration_time(20);
@@ -29,9 +25,6 @@ void initialize() {
 	rightMotors.tare_position_all();
 
 	// Set the base motors to coast (i.e. when a movement is over gradually slow down) to avoid burnout, should only add some minor drift
-	// leftMotors.set_brake_mode_all(pros::v5::MotorBrake::coast);
-	// rightMotors.set_brake_mode_all(pros::v5::MotorBrake::coast);
-
 	base.setBrakeMode(pros::E_MOTOR_BRAKE_COAST);
 
 	verticalRotationSensor.reset_position();
@@ -67,9 +60,6 @@ void initialize() {
 																											  // potentially be interrupted
 
 	pros::task_t updateArmPosition = pros::Task::create(handleArm, "Update intake speed"); // Same logic as the intake task
-
-
-	std::cout << "Intake hook temp at " << intakeSecondStage.get_temperature() << std::endl;
 }
 
 
