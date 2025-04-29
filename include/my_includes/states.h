@@ -10,7 +10,22 @@ namespace states {
       BlueNegativeCorner,
       BlueSoloAWP,
       Skills,
-      None
+      None,
+
+
+
+
+      RedPositiveAlliance,
+      RedPositiveMogo,
+      RedPositiveSweepAlliance,
+      RedPositiveSweepMogo,
+
+
+
+      BluePositiveAlliance,
+      BluePositiveMogo,
+      BluePositiveSweepAlliance,
+      BluePositiveSweepMogo,
     };
   }
 
@@ -25,6 +40,7 @@ namespace states {
       StoreRing,
       FindNextDown,
       FirstStage,
+      FirstStageReverse
     };
   }
 

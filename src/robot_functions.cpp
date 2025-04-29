@@ -3,6 +3,7 @@
 #include <array>
 #include <cmath>
 #include <fstream>
+#include <ostream>
 
 #include "pros/abstract_motor.hpp"
 #include "pros/misc.h"
@@ -53,9 +54,9 @@ std::array<int, 3> nextArmScoreHooks() {
     if ((intakeSecondStage.get_position() - 2385   * fullRotations) >= 1755)
         fullRotations += 1;  
 
-    int firstHookPosition = 230 + 2385 * fullRotations;
-    int secondHookPosition = 1040 + 2385 * fullRotations;
-    int thirdHookPosition = 1805 + 2385 * fullRotations;
+    int firstHookPosition = 260 + 2385 * fullRotations;
+    int secondHookPosition = 1070 + 2385 * fullRotations;
+    int thirdHookPosition = 1835 + 2385 * fullRotations;
 
     return {firstHookPosition, secondHookPosition, thirdHookPosition};
 }
@@ -78,25 +79,17 @@ float findClosestHook(DesiredHookPositions desiredHookPosition) {
     if (desiredHookPosition == Top) {
         potentialPositions = nextTopHooks();
 
-        // std::cout << "Hook at " << intakeSecondStage.get_position() << std::endl;
-
         // Runs through every item of the potential positions array
         for (int i = 0; i < potentialPositions.size(); i++) {
-            std::cout << "Hook " << i + 1 << " is " << potentialPositions[i] << std::endl;
-
             if (potentialPositions[i] - intakeSecondStage.get_position() > 0) // If the value is negative we know that the hook associated with the potential position has already passed the 
                 return potentialPositions[i];                                 // optical sensor and thus cannot hold the ring. As the potential positions array is arranged from smallest to
                                                                               // largest, we can confidently assume that the first valid position matches to the correct hook.
-            std::cout << "Hook " << i + 1 << " invalid " << potentialPositions[i] << std::endl;
-
         }
         
     } else if (desiredHookPosition == Neutral) {
         potentialPositions = nextNeutralHooks();
 
         for (int i = 0; i < potentialPositions.size(); i++) {
-            // std::cout << potentialPositions[i] << std::endl;
-
             if (potentialPositions[i] - intakeSecondStage.get_position() <= 0) // If the value is positive we know that the hook associated with the potential position needs to move forward to   
                 return potentialPositions[i];                                  // reach a "neutral position". As we want the intake to move backwards to avoid catching on mogos, we can 
                                                                                // immediately discard it. The equal check is to catch when the intake has not moved yet we accidently call it to 
@@ -107,17 +100,9 @@ float findClosestHook(DesiredHookPositions desiredHookPosition) {
     } else if (desiredHookPosition == Arm) {
         potentialPositions = nextArmScoreHooks();
 
-        // std::cout << potentialPositions[0] << ", " << potentialPositions[1] << ", " << potentialPositions[2] << std::endl;
-        
         for (int i = 0; i < potentialPositions.size(); i++) {
-            // std::cout << potentialPositions[i] << std::endl;
-
-            std::cout << "Hook " << i + 1 << " is " << potentialPositions[i] << std::endl;
-
             if (potentialPositions[i] - intakeSecondStage.get_position() > 0) // Same logic as the top hook position
                 return potentialPositions[i];     
-
-            std::cout << "Hook " << i + 1 << " invalid " << potentialPositions[i] << std::endl;
         }
     }
     
@@ -125,7 +110,7 @@ float findClosestHook(DesiredHookPositions desiredHookPosition) {
 }
 
 void moveIntakeToDesiredPosition(DesiredHookPositions desiredHookPosition) {
-    MyPID intakePID(0.002, 0, 0.3, 0, 5, 20, 1000, 0);
+    MyPID intakePID(0.675, 0, 0.1, 0, 3, 1000, 2000, 0);
 
     float desiredPosition = findClosestHook(desiredHookPosition); // Find out where the intake needs to rotate to in order to properly position a hook.
 
@@ -180,7 +165,7 @@ bool inSortRange(int targetPosition) {
 
 
 void handleIntake() {
-    std::cout << "init pos is " << intakeSecondStage.get_position() << std::endl;
+    // std::cout << "init pos is " << intakeSecondStage.get_position() << std::endl;
 
 
     int intakeSpeed = 0;
@@ -188,30 +173,72 @@ void handleIntake() {
     bool timerRunning = false;
     int32_t jamStartTime = 0;
 
+    bool moveArm = false;
     bool sortRing = false;
+
     int targetPosition = 0;
 
-    while (true) {
-        // If the driver has not overriden the color sort, look for opposing rings to throw off at the top.
+    bool ringStored = false;
 
+    bool waiting = false;
+
+    float ringChuckPos = 0;
+    bool newRing = true;
+
+
+
+    while (true) {
+
+        // If the driver has not overriden the color sort, look for opposing rings to throw off at the top.
         if (checkForColor(!global::flipColorSort) && !global::overrideColorSort) {
             if (!sortRing)
                 targetPosition = findClosestHook(Top);
 
             sortRing = true;
-        } 
+
+            if (global::armState == states::armStates::PrimeOne) {
+                global::armStatesQueue.push_back(states::armStates::Resting);
+                moveArm = true;
+            }
+        }
 
 
-        if (global::intakeState == states::intakeStates::Mogo && global::armState == states::armStates::PrimeOne && checkForColor(global::flipColorSort)) {
-            moveIntakeToDesiredPosition(Arm);
+
+        if (checkForColor(global::flipColorSort) && newRing) {
+            newRing = false;
+
+            ringChuckPos = findClosestHook(Top);
+
+            global::ringsDetected++;
+
+            // std::cout << "Count is " << global::ringsDetected << " Ring chuck pos is " << ringChuckPos << " new ring? " << newRing<< std::endl;
+        }
         
-            global::intakeState = states::intakeStates::Resting;
+        if (intakeSecondStage.get_position() >= ringChuckPos && !newRing) {
+            newRing = true;
+            // std::cout << "chucked ring at " << intakeSecondStage.get_position() << std::endl;
+        }
+
+
+
+        if (global::intakeState == states::intakeStates::Arm && checkForColor(global::flipColorSort)) {
+            intakeSecondStage.brake();
+
+            global::armStatesQueue.push_back(states::armStates::PrimeOne);
+
+            while (global::armStatesQueue.size() != 0)
+                pros::delay(5);
+
+            global::intakeState = states::intakeStates::Mogo;
         }
 
 
 
         // If the robot knows it has it an enemy ring and is within a few degrees of the position
         if (sortRing && inSortRange(targetPosition)) {
+           
+            
+
             intakeSecondStage.set_brake_mode(pros::v5::MotorBrake::brake); // Stop the untake for 500 ms, brake mode is set to brake to ensure a quick stop.
             intakeSecondStage.brake();                                          // Stopping the hook should allow the ring's momentum to carry it over the mogo.
             pros::delay(500);
@@ -223,6 +250,9 @@ void handleIntake() {
             intakeSecondStage.set_brake_mode(pros::v5::MotorBrake::coast); // Brake mode is set back to coast to avoid motor burn out
 
             sortRing = false; // Acknowledge that the ring has been sorted
+
+            if (moveArm)
+                global::armStatesQueue.push_back(states::armStates::PrimeOne);
         } 
 
 
@@ -245,30 +275,58 @@ void handleIntake() {
             timerRunning = false; // If the torque is  no longer capped out and the timer is running, stop the timer
 
         // If the timer is running and passed
-        if (timerRunning && pros::millis() - jamStartTime >= 250 && global::armState != states::armStates::PrimeOne) {
+        if (timerRunning && pros::millis() - jamStartTime >= 250 && global::armState != states::armStates::PrimeOne && !global::overrideAntiJam) {
             intakeSecondStage.move_velocity(-600); // Reverse the second stage of the intake for 750 ms, this stops the hooks from interfering with the ring
             pros::delay(500);
             intakeSecondStage.move_velocity(intakeSpeed); // Start moving the intake the right direction
 
             timerRunning = false; // Disable the timer
-        } else if (timerRunning && pros::millis() - jamStartTime >= 500 && global::armState == states::armStates::PrimeOne)
-            global::intakeState = states::intakeStates::Resting;
+        } 
+        
+        
+        else if (timerRunning && pros::millis() - jamStartTime >= 1000 && global::armState == states::armStates::PrimeOne) {
+            // intakeSecondStage.move_velocity(-150);
+
+            // pros::delay(100);
+
+            global::intakeState = states::intakeStates::FirstStage;
+
+            // ringStored = true;
+            
+        }
 
 
 
         if (global::intakeState == states::intakeStates::Mogo || global::intakeState == states::intakeStates::StoreRing 
-            || global::intakeState == states::intakeStates::FirstStage)
+            || global::intakeState == states::intakeStates::FirstStage || global::intakeState == states::intakeStates::Arm)
             intakeSpeed = 600;  // Sets the intake to 600 rpm, running directly to the mogo
         else if (global::intakeState == states::intakeStates::Resting) // Stops the intake
             intakeSpeed = 0;
-        else if (global::intakeState == states::intakeStates::Reverse) // Reverses the intake at 600 rpm
+        else if (global::intakeState == states::intakeStates::Reverse || global::intakeState == states::intakeStates::FirstStageReverse) // Reverses the intake at 600 rpm
             intakeSpeed = -600;
 
         intakeFirstStage.move_velocity(intakeSpeed);
 
-        if (global::armState == states::armStates::WallStake)
-            intakeSecondStage.move_velocity(-intakeSpeed * 150 / 600);
-        else if (global::intakeState != states::intakeStates::FirstStage)
+        // if (global::armState != states::armStates::Resting)
+            // std::cout << "Arm state is " << global::armState << std::endl;
+
+        if (global::armState == states::armStates::PrimeTwo) {
+            if (ringStored) {
+                intakeSecondStage.move_velocity(-200);
+                pros::delay(150);
+
+                intakeSecondStage.brake();
+            }
+
+            ringStored = false;
+        }
+
+
+        if (global::armState == states::armStates::WallStake || global::armState == states::armStates::AllianceStake) {
+            ringStored = false;
+
+            intakeSecondStage.move_velocity(-300);
+        } else if (global::intakeState != states::intakeStates::FirstStage && global::intakeState != states::intakeStates::FirstStageReverse && !ringStored)
             intakeSecondStage.move_velocity(intakeSpeed);
         else
             intakeSecondStage.move_velocity(0);
@@ -292,44 +350,53 @@ void handleArm() {
 
     bool inMotion = false; // Whether or not the arm is still moving
 
-    MyPID armPID(0.75, 0.0, 0.1, 0.0, 1, 500, 2000, 0); // An instance of the MyPID class to calculate the outputs
+    MyPID armPID(0.75, 0.0, 0.1, 0.0, 1, 500, 1500, 0); // An instance of the MyPID class to calculate the outputs
 
 
 
     bool removedBuffer = true; // Whether or not we have completed a certain motion
     bool freeze = true;
 
-
+    armRotationSensor.reset_position();
     
     while (true) {
         // The variety of positions the arm should move to in order to score or do the associated action. "Prime" refers to the position in which we can store a ring in the arm.        
         if (global::armState == states::armStates::Resting)
             targetArmPosition = 0;
         else if (global::armState == states::armStates::PrimeOne)
-            targetArmPosition = 90; // Numbers from testing
+            targetArmPosition = 85; // Numbers from testing
         else if (global::armState == states::armStates::PrimeTwo)
-            targetArmPosition = 180;
+            targetArmPosition = 190;
         else if (global::armState == states::armStates::WallStake)
-            targetArmPosition = 530;
+            targetArmPosition = 550;
         else if (global::armState == states::armStates::AllianceStake)
             targetArmPosition = 730;
         else if (global::armState == states::armStates::TipMogo)
             targetArmPosition = 830;
 
 
+        
+        while (global::armState == states::armStates::PrimeTwo && intakeSecondStage.get_target_velocity() < 0) {
+            pros::delay(5);
+        } 
 
-        currentArmPosition = arm.get_position();
+
+
+        currentArmPosition = (float) armRotationSensor.get_position() / 100;
+
+
 
         error = targetArmPosition - currentArmPosition; // Calculates the error for the PID
 
         armPID.update(error); // Updates all the values of the PID to get the next output
 
+        // std::cout << "Error at " << error << std::endl;
 
 
         inMotion = !armPID.earlyExit(); // Check to see if the PID is within its exit range so it is not stuck on one motion
 
         // If we are not within the exit range
-        if (inMotion && !freeze) {
+        if (inMotion && !freeze && !global::cancelArmMotion) {
             armVelocity = armPID.getVelocity(); // Get the velocity
 
             arm.move_velocity(armVelocity); // Move the arm at the appropiate speed
@@ -345,6 +412,7 @@ void handleArm() {
                 if (global::armStatesQueue.size() != 0)
                     global::armStatesQueue.erase(global::armStatesQueue.begin()); // Deletes the item from the queue
                 removedBuffer = true;                                                      // Ensures that we do not delete the entire queue without completing all the actions
+
             }
 
             // Basically checks for if we have a queue
@@ -353,6 +421,7 @@ void handleArm() {
                 global::armState = global::armStatesQueue.begin()[0]; // If we do have a queue we move the arm to the first/next position in queue
                 removedBuffer = false;                                // Reset the buffer variable so we know we have not completed the motion
                 freeze = false;
+                global::cancelArmMotion = false;
             } else
                 freeze = true; // Used to prevent a motion from starting again without registering a new state
         }

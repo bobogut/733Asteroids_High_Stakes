@@ -60,6 +60,17 @@ void initialize() {
 																											  // potentially be interrupted
 
 	pros::task_t updateArmPosition = pros::Task::create(handleArm, "Update intake speed"); // Same logic as the intake task
+
+	// base.setPose(-58.2, -13.3, 323);
+
+	// base.setPose(-60.5, -14.4,315.3);
+
+	// base.setPose(-58.2, -16.2,315.3);
+
+	// base.setPose(58.2, -16.2, 44.7);
+
+	// base.setPose(-24, -24, 90);
+
 }
 
 

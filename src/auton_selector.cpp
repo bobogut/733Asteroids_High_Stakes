@@ -14,8 +14,14 @@
 
 // Autonomous selector screens (think of them like website pages)
 lv_obj_t *homeScreen = lv_obj_create(NULL);
+
 lv_obj_t *redScreen = lv_obj_create(NULL);
+lv_obj_t *redPositiveScreen = lv_obj_create(NULL);
+lv_obj_t *redNegativeScreen = lv_obj_create(NULL);
+
 lv_obj_t *blueScreen = lv_obj_create(NULL);
+lv_obj_t *bluePositiveScreen = lv_obj_create(NULL);
+lv_obj_t *blueNegativeScreen = lv_obj_create(NULL);
 
 
 
@@ -25,14 +31,28 @@ lv_obj_t *skillsBtn = lv_btn_create(homeScreen); // Indicates that this button (
 
 // Buttons specifically for red side autonomous
 lv_obj_t *redSide = lv_btn_create(homeScreen);
-lv_obj_t *redPositiveCornerBtn = lv_btn_create(redScreen);
-lv_obj_t *redNegativeCornerBtn = lv_btn_create(redScreen);
+
+lv_obj_t *redPositive = lv_btn_create(redScreen);
+lv_obj_t *redPositiveOne = lv_btn_create(redPositiveScreen);
+lv_obj_t *redPositiveTwo = lv_btn_create(redPositiveScreen);
+
+lv_obj_t *redNegative = lv_btn_create(redScreen);
+lv_obj_t *redNegativeOne = lv_btn_create(redNegativeScreen);
+lv_obj_t *redNegativeTwo = lv_btn_create(redNegativeScreen);
+
 lv_obj_t *redSoloAWPBtn = lv_btn_create(redScreen);
 
 // Buttons specifically for blue side autonomous
 lv_obj_t *blueSide = lv_btn_create(homeScreen); 
-lv_obj_t *bluePositiveCornerBtn = lv_btn_create(blueScreen);
-lv_obj_t *blueNegativeCornerBtn = lv_btn_create(blueScreen);
+
+lv_obj_t *bluePositive = lv_btn_create(blueScreen);
+lv_obj_t *bluePositiveOne = lv_btn_create(bluePositiveScreen);
+lv_obj_t *bluePositiveTwo = lv_btn_create(bluePositiveScreen);
+
+lv_obj_t *blueNegative = lv_btn_create(blueScreen);
+lv_obj_t *blueNegativeOne = lv_btn_create(blueNegativeScreen);
+lv_obj_t *blueNegativeTwo = lv_btn_create(blueNegativeScreen);
+
 lv_obj_t *blueSoloAWPBtn = lv_btn_create(blueScreen);
 
 // Buttons to navigage the screens
@@ -98,11 +118,11 @@ void styleButtons() {
     lv_obj_add_style(redSide, &styleRed, LV_STATE_DEFAULT);
     lv_obj_add_style(redSide, &styleRedSelected, LV_STATE_CHECKED);
 
-    lv_obj_add_style(redPositiveCornerBtn, &styleRed, LV_STATE_DEFAULT);
-    lv_obj_add_style(redPositiveCornerBtn, &styleRedSelected, LV_STATE_CHECKED);
+    lv_obj_add_style(redPositive, &styleRed, LV_STATE_DEFAULT);
+    lv_obj_add_style(redPositive, &styleRedSelected, LV_STATE_CHECKED);
 
-    lv_obj_add_style(redNegativeCornerBtn, &styleRed, LV_STATE_DEFAULT);
-    lv_obj_add_style(redNegativeCornerBtn, &styleRedSelected, LV_STATE_CHECKED);
+    lv_obj_add_style(redNegative, &styleRed, LV_STATE_DEFAULT);
+    lv_obj_add_style(redNegative, &styleRedSelected, LV_STATE_CHECKED);
 
     lv_obj_add_style(redSoloAWPBtn, &styleRed, LV_STATE_DEFAULT);
     lv_obj_add_style(redSoloAWPBtn, &styleRedSelected, LV_STATE_CHECKED);
@@ -114,12 +134,12 @@ void styleButtons() {
     lv_obj_add_style(blueSide, &styleBlue, LV_STATE_DEFAULT);
     lv_obj_add_style(blueSide, &styleBlueSelected, LV_STATE_CHECKED);
 
-    lv_obj_add_style(bluePositiveCornerBtn, &styleBlue, LV_STATE_DEFAULT);
-    lv_obj_add_style(bluePositiveCornerBtn, &styleBlueSelected, LV_STATE_CHECKED);
+    lv_obj_add_style(bluePositive, &styleBlue, LV_STATE_DEFAULT);
+    lv_obj_add_style(bluePositive, &styleBlueSelected, LV_STATE_CHECKED);
     
 
-    lv_obj_add_style(blueNegativeCornerBtn, &styleBlue, LV_STATE_DEFAULT);
-    lv_obj_add_style(blueNegativeCornerBtn, &styleBlueSelected, LV_STATE_CHECKED);
+    lv_obj_add_style(blueNegative, &styleBlue, LV_STATE_DEFAULT);
+    lv_obj_add_style(blueNegative, &styleBlueSelected, LV_STATE_CHECKED);
 
     lv_obj_add_style(blueSoloAWPBtn, &styleBlue, LV_STATE_DEFAULT);
     lv_obj_add_style(blueSoloAWPBtn, &styleBlueSelected, LV_STATE_CHECKED);
@@ -139,13 +159,13 @@ void updateStates() {
     lv_obj_clear_state(skillsBtn, LV_STATE_CHECKED);
 
     lv_obj_clear_state(redSide, LV_STATE_CHECKED);
-    lv_obj_clear_state(redPositiveCornerBtn, LV_STATE_CHECKED);
-    lv_obj_clear_state(redNegativeCornerBtn, LV_STATE_CHECKED);
+    lv_obj_clear_state(redPositive, LV_STATE_CHECKED);
+    lv_obj_clear_state(redNegative, LV_STATE_CHECKED);
     lv_obj_clear_state(redSoloAWPBtn, LV_STATE_CHECKED);
 
     lv_obj_clear_state(blueSide, LV_STATE_CHECKED);
-    lv_obj_clear_state(bluePositiveCornerBtn, LV_STATE_CHECKED);
-    lv_obj_clear_state(blueNegativeCornerBtn, LV_STATE_CHECKED);
+    lv_obj_clear_state(bluePositive, LV_STATE_CHECKED);
+    lv_obj_clear_state(blueNegative, LV_STATE_CHECKED);
     lv_obj_clear_state(blueSoloAWPBtn, LV_STATE_CHECKED);
 
 
@@ -154,15 +174,15 @@ void updateStates() {
     if (global::autonSelected == states::autonStates::Skills)
         lv_obj_add_state(skillsBtn, LV_STATE_CHECKED);
     else if (global::autonSelected == states::autonStates::RedPositiveCorner)
-        lv_obj_add_state(redPositiveCornerBtn, LV_STATE_CHECKED);
+        lv_obj_add_state(redPositive, LV_STATE_CHECKED);
     else if (global::autonSelected == states::autonStates::RedNegativeCorner)
-        lv_obj_add_state(redNegativeCornerBtn, LV_STATE_CHECKED);
+        lv_obj_add_state(redNegative, LV_STATE_CHECKED);
     else if (global::autonSelected == states::autonStates::RedSoloAWP)
         lv_obj_add_state(redSoloAWPBtn, LV_STATE_CHECKED);
     else if (global::autonSelected == states::autonStates::BluePositiveCorner)
-        lv_obj_add_state(bluePositiveCornerBtn, LV_STATE_CHECKED);
+        lv_obj_add_state(bluePositive, LV_STATE_CHECKED);
     else if (global::autonSelected == states::autonStates::BlueNegativeCorner)
-        lv_obj_add_state(blueNegativeCornerBtn, LV_STATE_CHECKED);
+        lv_obj_add_state(blueNegative, LV_STATE_CHECKED);
     else if (global::autonSelected == states::autonStates::BlueSoloAWP)
         lv_obj_add_state(blueSoloAWPBtn, LV_STATE_CHECKED);
 
@@ -192,18 +212,17 @@ void buttonPress(lv_event_t *btnPressed) {
 
 
     // Red side buttons
-    else if (btn == redPositiveCornerBtn) {
+    else if (btn == redPositive) {
         if (global::autonSelected != states::autonStates::RedPositiveCorner)
             global::autonSelected = states::autonStates::RedPositiveCorner;
         else
             global::autonSelected = states::autonStates::None;
-    } else if (btn == redNegativeCornerBtn) {
+    } else if (btn == redNegative) {
         if (global::autonSelected != states::autonStates::RedNegativeCorner)
             global::autonSelected = states::autonStates::RedNegativeCorner;
         else
             global::autonSelected = states::autonStates::None;
-    }
-    else if (btn == redSoloAWPBtn) {
+    } else if (btn == redSoloAWPBtn) {
         if (global::autonSelected != states::autonStates::RedSoloAWP)
             global::autonSelected = states::autonStates::RedSoloAWP;
         else
@@ -213,12 +232,12 @@ void buttonPress(lv_event_t *btnPressed) {
 
 
     // Blue side buttons
-    else if (btn == bluePositiveCornerBtn) {
+    else if (btn == bluePositive) {
         if (global::autonSelected != states::autonStates::BluePositiveCorner)
             global::autonSelected = states::autonStates::BluePositiveCorner;
         else
             global::autonSelected = states::autonStates::None;
-    } else if (btn == blueNegativeCornerBtn) {
+    } else if (btn == blueNegative) {
         if (global::autonSelected != states::autonStates::BlueNegativeCorner)
             global::autonSelected = states::autonStates::BlueNegativeCorner;
         else
@@ -276,13 +295,13 @@ void autonSelectorInitialization() {
     buttonInitialization(skillsBtn, 12, 12, 144, 192, "Skills");
 
     buttonInitialization(redSide, 168, 12, 144, 192, "Red Alliance");
-    buttonInitialization(redPositiveCornerBtn, 12, 12, 144, 152, LV_SYMBOL_PLUS);
-    buttonInitialization(redNegativeCornerBtn, 168, 12, 144, 152, LV_SYMBOL_MINUS);
+    buttonInitialization(redPositive, 12, 12, 144, 152, LV_SYMBOL_PLUS);
+    buttonInitialization(redNegative, 168, 12, 144, 152, LV_SYMBOL_MINUS);
     buttonInitialization(redSoloAWPBtn, 324, 12, 144, 152, "SOLO AWP");
 
     buttonInitialization(blueSide, 324, 12, 144, 192, "Blue Alliance");
-    buttonInitialization(bluePositiveCornerBtn, 12, 12, 144, 152, LV_SYMBOL_PLUS);
-    buttonInitialization(blueNegativeCornerBtn, 168, 12, 144, 152, LV_SYMBOL_MINUS);
+    buttonInitialization(bluePositive, 12, 12, 144, 152, LV_SYMBOL_PLUS);
+    buttonInitialization(blueNegative, 168, 12, 144, 152, LV_SYMBOL_MINUS);
     buttonInitialization(blueSoloAWPBtn, 324, 12, 144, 152, "SOLO AWP");
 
     buttonInitialization(backRed, 12, 176, 456, 52, "Back");

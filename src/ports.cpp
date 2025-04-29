@@ -12,7 +12,7 @@
 
 /*
 Bad ports
-8, 9
+8, 9, 12
 
 4?
 */
@@ -29,10 +29,14 @@ lemlib::Drivetrain drivetrain {
     10.305,                        // Track width, i.e. the distance between wheels on opposite sides of the drivetrain
     lemlib::Omniwheel::NEW_325, // We are using the VEX 3.25" anti-static wheels
     450,                                  // We are running a 450 RPM base
-    2                         // The horizontal drift
+    4                         // The horizontal drift
 };
 
+
+
 pros::IMU imu(11); // Set up for the inertial sensor (imu) on port 17
+
+pros::IMU test = pros::IMU::get_imu();
 
 // Set up for the tracking wheels using rotational sensors on port 8 and 9
 pros::Rotation verticalRotationSensor(-2);
@@ -42,7 +46,7 @@ lemlib::TrackingWheel verticalTracking(&verticalRotationSensor, 2.0, 0.5559155);
                                                                                                                  // the offset from the center (in this case
                                                                                                                  // the vertical offset is accounted for)
 
-pros::Rotation horizontalRotationSensor(19);
+pros::Rotation horizontalRotationSensor(18);
 lemlib::TrackingWheel horizontalTracking(&horizontalRotationSensor,
                                          2.0, 2.3059155);
 
@@ -62,9 +66,9 @@ lemlib::ControllerSettings lateralController(
     0,                    // Integral gains, i.e. the weight of error accumulation on the calculation 0.1
     10, // 25                    // Derivative gains, i.e. the weight of error change on the calculation
     0, // Anti windup 1.00335
-    1,            // Small error timeout is considered when the robot is within 1" of its goal
+    0.5,            // Small error timeout is considered when the robot is within 1" of its goal
     500, // When error is in the small range for long enough move on to the next motion
-    3,            // Large error timeout is considered when the robot is within 3" of its goal
+    1,            // Large error timeout is considered when the robot is within 3" of its goal
     1500, // When error is in the large range for long enough move on to the next motion
     0                   // Maximum acceleration
 );
@@ -72,12 +76,12 @@ lemlib::ControllerSettings lateralController(
 // PID constants for turning
 lemlib::ControllerSettings angularController(
     4,
-    0, // 0.45
-    30, // 3
+    0,
+    38,
     0, //-1.15725333333333
-    1,
+    3,
     500,
-    5,
+    7,
     1500, 
     0 //1,100,3,500
 );
@@ -88,10 +92,11 @@ lemlib::Chassis base(drivetrain, lateralController, angularController, sensors);
 
 
 pros::Motor arm(-7, pros::v5::MotorGears::green, pros::v5::MotorEncoderUnits::degrees); // Right motor reversed
+pros::Rotation armRotationSensor(-12);
 
 
 
-pros::Motor intakeFirstStage(12, pros::v5::MotorGears::green, pros::v5::MotorEncoderUnits::degrees);
+pros::Motor intakeFirstStage(14, pros::v5::MotorGears::green, pros::v5::MotorEncoderUnits::degrees);
 pros::Motor intakeSecondStage(21, pros::v5::MotorGears::blue, pros::v5::MotorEncoderUnits::degrees);
 
 
@@ -102,4 +107,3 @@ pros::Optical optical(4); // Optical sensor for ring sorter
 
 pros::adi::Pneumatics mogoClamp('d', false);
 pros::adi::Pneumatics doinker('h', false);
-// pros::adi::Pneumatics intakePiston('c', true);

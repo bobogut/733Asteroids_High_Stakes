@@ -14,14 +14,24 @@ namespace global {
     inline bool initializedBrainCoords;
 
     inline bool runningAuton;
+    inline bool ranAuton = false;
     inline bool runningOpControl;
 
     inline bool flipColorSort = false;
     inline bool overrideColorSort = false;
+    inline bool overrideAntiJam = false;
 
     inline bool findNextDown = false;
 
+
+    inline bool cancelArmMotion = false;
+
+    inline bool test = false;
+
     inline enum states::intakeStates::IntakeStates intakeState = states::intakeStates::Resting;
+
+    inline int ringsDetected = 0;
+
 
     inline enum states::armStates::ArmStates armState = states::armStates::Resting;
     inline std::vector<states::armStates::ArmStates> armStatesQueue;

@@ -1,5 +1,11 @@
 For tracking changes and going into greater detail after December 10, 2024.
 
+Apr 29, 2025
+- Final commit, good luck next season
+
+Feb 27, 2025
+- Fixed a bug with calculating error in intake PID, still requires tuning
+
 Feb 25, 2025
 - Reimplemented color sort, calculations changed due to new sprocket size
 - Changed calculations to use integers rather than floats due to using degrees rather than rotations

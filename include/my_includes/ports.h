@@ -21,6 +21,7 @@ extern lemlib::Chassis base;
 
 
 extern pros::Motor arm;
+extern pros::Rotation armRotationSensor;
 
 
 
@@ -35,4 +36,3 @@ extern pros::Optical optical;
 
 extern pros::adi::Pneumatics mogoClamp;
 extern pros::adi::Pneumatics doinker;
-extern pros::adi::Pneumatics intakePiston;
